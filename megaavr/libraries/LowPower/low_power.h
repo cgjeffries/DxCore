@@ -31,4 +31,16 @@ public:
 	*/
 	void disableSleepMode();
 
+	/*
+	Enters sleep mode. Sleep mode MUST be enabled and the mode must be set prior to calling this function.
+	Flushes Serial buffer before entering sleep if flushSerial is set to true.
+	*/
+	void enterSleep(bool flushSerial = true);
+
+	/*
+	One step sleep function. Sets the sleep mode, enables sleep, and enters sleep.
+	If flushSerial is true, also flushes the Serial buffer before sleeping.
+	*/
+	void sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial = true);
+
 #endif
