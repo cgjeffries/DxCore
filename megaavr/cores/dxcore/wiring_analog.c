@@ -160,6 +160,14 @@ int16_t analogRead(uint8_t pin) {
   return ADC0.RES;
 }
 
+void analogReadEnableDifferential(uint8_t negPin) {
+  check_valid_negative_pin(pin);
+
+  while (ADC0.COMMAND & 1);
+
+  ADC0.CTRLA |= 1 << 5;
+  ADC0.MUXNEG = negPin;
+}
 
 inline __attribute__((always_inline)) void check_valid_negative_pin(uint8_t pin) {
   if(__builtin_constant_p(pin)) {
