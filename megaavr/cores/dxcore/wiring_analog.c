@@ -27,6 +27,8 @@
 #include "Arduino.h"
 #include <avr/pgmspace.h>
 
+#include "ADC.h"
+
 /* magic value passsed as the negative pin to tell the _analogReadEnh() (which implements both th new ADC
  * functions) to tell them what kind of mode it's to be used in. This also helps with providing useful and accurate
  * error messages and codes at runtime, since we have no other way to report such.                                 */
@@ -871,3 +873,19 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
     }
   }
 */
+
+// MALS-98
+void analogReadSampleDelay(uint8_t delay) {
+  if (~(ADC0.COMMAND & ADC_STCONV_bm) && delay >= 0 && delay <= 15) {
+    ADCConfig.sampleDelay = delay;
+    ADC0.CTRLD |= delay;
+  }
+}
+
+void analogReadSampleDelay(ADC_SAMPDLY_t delay) {
+  uint8_t int_delay = (uint8_t) delay;
+  if (~(ADC0.COMMAND & ADC_STCONV_bm) && int_delay >= 0 && int_delay <= 15) {
+    ADCConfig.sampleDelay = int_delay;
+    ADC0.CTRLD = delay;
+  }
+}
