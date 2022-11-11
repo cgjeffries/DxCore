@@ -1,4 +1,5 @@
 #include "api/ArduinoAPI.h"
+#include "Arduino.h"
 
 
 // Helper functions
