@@ -160,7 +160,6 @@ int16_t analogRead(uint8_t pin) {
   return ADC0.RES;
 }
 
-
 inline __attribute__((always_inline)) void check_valid_negative_pin(uint8_t pin) {
   if(__builtin_constant_p(pin)) {
     if (pin < 0x80) {
@@ -872,11 +871,19 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
   }
 */
 
-// MALS-98
 void analogReadSampleDelay(uint8_t delay) {
   while (ADC0.COMMAND & ADC_STCONV_bm) {}
   if (delay <= 15) {
-    ADC0.CTRLD &= 0b11110000; // After: ADC0.CTRLD = 0b11000000
-    ADC0.CTRLD |= delay; // After: ADC0.CTRLD = 0b11000110
+    ADC0.CTRLD &= 0b11110000;
+    ADC0.CTRLD |= delay;
   }
+}
+
+void analogReadEnableDifferential(uint8_t negPin) {
+  check_valid_negative_pin(negPin);
+
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  ADC0.CTRLA |= ADC_CONVMODE_bm;
+  ADC0.MUXNEG = negPin;
 }

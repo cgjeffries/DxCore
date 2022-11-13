@@ -1,7 +1,9 @@
 #ifndef ADC_H
 #define ADC_H
 
-#include <stdint.h>
+#ifdef __cplusplus
+extern "C"{
+#endif
 
 //////////////////////////////////////////////////////////////
 //                     General ADC API                      //
@@ -54,5 +56,9 @@ void analogReadEnableSingleEnded();
 Enables differential mode
 */
 void analogReadEnableDifferential(uint8_t negPin);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
