@@ -1,8 +1,10 @@
 #include "low_power.h"
+#include "pins_arduino.h"
+#include "Arduino.h"
 
 // MALS-89
-void setSleepMode(SLPCTRL_SMODE_t sleepMode) {
-  SLPCTRL.CTRLA = sleepMode;
+void setSleepMode(uint8_t sleepMode) {
+  SLPCTRL.CTRLA = sleepMode; // Bit 0 - SEN - will go back to 0
 }
 
 // MALS-90
@@ -18,14 +20,14 @@ void disableSleepMode() {
 }
 
 // MALS-91
-void enterSleep(bool flushSerial = true) {
-  asm("sleep \n");
+void enterSleep(bool flushSerial) {
   if (flushSerial)
     Serial.flush();
+  asm("sleep \n");
 }
 
 // MALS-89, MALS-90, & MALS-91 combined
-void sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial = true) {
+void sleepSimple(uint8_t sleepMode, bool flushSerial) {
   setSleepMode(sleepMode);
   enableSleepMode();
   enterSleep(flushSerial);
