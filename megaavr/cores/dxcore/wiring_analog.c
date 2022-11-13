@@ -875,7 +875,7 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
 // MALS-98
 void analogReadSampleDelay(uint8_t delay) {
   while (ADC0.COMMAND & ADC_STCONV_bm) {}
-  if (delay >= 0 && delay <= 15) {
+  if (delay <= 15) {
     ADC0.CTRLD &= 0b11110000; // After: ADC0.CTRLD = 0b11000000
     ADC0.CTRLD |= delay; // After: ADC0.CTRLD = 0b11000110
   }
