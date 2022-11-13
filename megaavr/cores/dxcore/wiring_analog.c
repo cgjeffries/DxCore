@@ -871,50 +871,51 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
   }
 */
 void analogReadSampleDelay(uint8_t delay) {
-    while (ADC0.COMMAND & ADC_STCONV_bm) {}
-    if (delay <= 15) {
-        ADC0.CTRLD &= 0b11110000;
-        ADC0.CTRLD |= delay;
-    }
+  while (ADC0.COMMAND & ADC_STCONV_bm) {}
+  if (delay <= 15) {
+    ADC0.CTRLD &= 0b11110000;
+    ADC0.CTRLD |= delay;
+  }
 }
 
 void analogReadEnableDifferential(uint8_t negPin) {
-    check_valid_negative_pin(negPin);
+  check_valid_negative_pin(negPin);
 
-    while (ADC0.COMMAND & ADC_STCONV_bm);
+  while (ADC0.COMMAND & ADC_STCONV_bm);
 
-    ADC0.CTRLA |= ADC_CONVMODE_bm;
-    ADC0.MUXNEG = negPin;
+  ADC0.CTRLA |= ADC_CONVMODE_bm;
+  ADC0.MUXNEG = negPin;
 }
 
 // Designed expecting user to pass in number of results, not number set to the register
 void analogReadSampleNum(uint8_t numSamples) {
-    while (ADC0.COMMAND & ADC_STCONV_bm) {}
-        ADC0.CTRLB &= 0b11111000;   //Setting accumulation to 0
-        switch (numSamples) {
-        case 2:
-            ADC0.CTRLB |= 0b00000001;
-            break;
-        case 4:
-            ADC0.CTRLB |= 0b00000010;
-            break;
-        case 8:
-            ADC0.CTRLB |= 0b00000011;
-            break;
-        case 16:
-            ADC0.CTRLB |= 0b00000100;
-            break;
-        case 32:
-            ADC0.CTRLB |= 0b00000101;
-            break;
-        case 64:
-            ADC0.CTRLB |= 0b00000110;
-            break;
-        case 128:
-            ADC0.CTRLB |= 0b00000111;
-            break;
-        default:
-            break;
-        }
+  while (ADC0.COMMAND & ADC_STCONV_bm) {}
+    ADC0.CTRLB &= 0b11111000;   //Setting accumulation to 0
+    switch (numSamples) {
+    case 2:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC2_gc;
+      break;
+    case 4:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC4_gc;
+      break;
+    case 8:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC8_gc;
+      break;
+    case 16:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC16_gc;
+      break;
+    case 32:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC32_gc;
+      break;
+    case 64:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC64_gc;
+      break;
+    case 128:
+      ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC128_gc;
+      break;
+    default:
+        fprintf(stderr, "Invalid Argument");
+      break;
     }
+  }
 }
