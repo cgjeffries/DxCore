@@ -871,8 +871,23 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
     }
   }
 */
+void analogReadSampleDelay(uint8_t delay) {
+    while (ADC0.COMMAND & ADC_STCONV_bm) {}
+    if (delay <= 15) {
+        ADC0.CTRLD &= 0b11110000;
+        ADC0.CTRLD |= delay;
+    }
+}
 
-// MALS-97
+void analogReadEnableDifferential(uint8_t negPin) {
+    check_valid_negative_pin(negPin);
+
+    while (ADC0.COMMAND & ADC_STCONV_bm);
+
+    ADC0.CTRLA |= ADC_CONVMODE_bm;
+    ADC0.MUXNEG = negPin;
+}
+
 // Designed expecting user to pass in number of results, not number set to the register
 void analogReadSampleNum(uint8_t numSamples) {
     while (ADC0.COMMAND & ADC_STCONV_bm) {}
