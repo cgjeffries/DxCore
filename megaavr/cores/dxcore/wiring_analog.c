@@ -871,3 +871,36 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
     }
   }
 */
+
+// MALS-97
+// Designed expecting user to pass in number of results, not number set to the register
+void analogReadSampleNum(uint8_t numSamples) {
+    while (ADC0.COMMAND & ADC_STCONV_bm) {}
+        ADC0.CTRLB &= 0b11111000;   //Setting accumulation to 0
+        switch (numSamples) {
+        case 2:
+            ADC0.CTRLB |= 0b00000001;
+            break;
+        case 4:
+            ADC0.CTRLB |= 0b00000010;
+            break;
+        case 8:
+            ADC0.CTRLB |= 0b00000011;
+            break;
+        case 16:
+            ADC0.CTRLB |= 0b00000100;
+            break;
+        case 32:
+            ADC0.CTRLB |= 0b00000101;
+            break;
+        case 64:
+            ADC0.CTRLB |= 0b00000110;
+            break;
+        case 128:
+            ADC0.CTRLB |= 0b00000111;
+            break;
+        default:
+            break;
+        }
+    }
+}
