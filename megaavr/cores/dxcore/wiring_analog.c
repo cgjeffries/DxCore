@@ -160,7 +160,6 @@ int16_t analogRead(uint8_t pin) {
   return ADC0.RES;
 }
 
-
 inline __attribute__((always_inline)) void check_valid_negative_pin(uint8_t pin) {
   if(__builtin_constant_p(pin)) {
     if (pin < 0x80) {

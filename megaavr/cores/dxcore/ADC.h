@@ -1,3 +1,10 @@
+#ifndef ADC_H
+#define ADC_H
+
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 //////////////////////////////////////////////////////////////
 //                     General ADC API                      //
 //////////////////////////////////////////////////////////////
@@ -18,7 +25,7 @@ typedef struct ADCConfig_struct {
 /*
 Sets the registers to fit the passed in configuration
 */
-void analogReadConfig(ADCConfig config)
+void analogReadConfig(ADCConfig config);
 
 /*
 Specify an accumulation amount
@@ -28,12 +35,12 @@ void analogReadSampleNum(uint8_t numSamples);
 /*
 Specify the delay between samples
 */
-void analogReadSampleDelay(uint8_t delay)
+void analogReadSampleDelay(uint8_t delay);
 
 /*
 Specify the length of each sample
 */
-void analogReadSampleLen(uint8_t len)
+void analogReadSampleLen(uint8_t len);
 
 /*
 Set the prescalaer
@@ -49,3 +56,9 @@ void analogReadEnableSingleEnded();
 Enables differential mode
 */
 void analogReadEnableDifferential(uint8_t negPin);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
