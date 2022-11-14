@@ -38,11 +38,6 @@ Specify the delay between samples
 void analogReadSampleDelay(uint8_t delay);
 
 /*
-Specify the length of each sample
-*/
-void analogReadSampleLen(uint8_t len);
-
-/*
 Set the prescalaer
 */
 void analogReadPrescaler(uint8_t prescaler);
