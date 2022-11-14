@@ -914,7 +914,7 @@ void analogReadSampleNum(uint8_t numSamples) {
       ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC128_gc;
       break;
     default:
-        fprintf(stderr, "Invalid Argument");
+        badArg("Unexpected value");
       break;
     }
   }
