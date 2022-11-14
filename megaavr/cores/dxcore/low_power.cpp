@@ -1,5 +1,3 @@
-#include "low_power.h"
-#include "pins_arduino.h"
 #include "Arduino.h"
 
 // MALS-89
