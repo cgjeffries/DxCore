@@ -887,3 +887,9 @@ void analogReadEnableDifferential(uint8_t negPin) {
   ADC0.CTRLA |= ADC_CONVMODE_bm;
   ADC0.MUXNEG = negPin;
 }
+
+void analogReadEnableSingleEnded() {
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  ADC0.CTRLA &= ~ADC_CONVMODE_bm;
+}
