@@ -919,3 +919,9 @@ void analogReadSampleNum(uint8_t numSamples) {
     }
   }
 }
+
+void analogReadEnableSingleEnded() {
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  ADC0.CTRLA &= ~ADC_CONVMODE_bm;
+}
