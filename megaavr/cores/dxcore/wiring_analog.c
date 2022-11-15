@@ -871,6 +871,20 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
   }
 */
 
+void analogReadConfig(ADCConfig config) {
+  if (config.convMode == 0) {
+    analogReadEnableSingleEnded();
+  } else {
+    analogReadEnableDifferential(config.muxNeg);
+  }
+
+  analogReadResolution(config.resolution);
+  // TODO: set prescaler
+  // TODO: set sample num
+  analogReadSampleDelay(config.sampleDelay);
+  analogSampleDuration(config.sampleLen);
+}
+
 void analogReadSampleDelay(uint8_t delay) {
   while (ADC0.COMMAND & ADC_STCONV_bm) {}
   if (delay <= 15) {
