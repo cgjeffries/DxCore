@@ -892,6 +892,9 @@ void analogReadSampleNum(uint8_t numSamples) {
   while (ADC0.COMMAND & ADC_STCONV_bm) {}
     ADC0.CTRLB &= 0b11111000;   //Setting accumulation to 0
     switch (numSamples) {
+    case 0:
+      //Empty case so that 0 doesn't through an error
+      break;
     case 2:
       ADC0.CTRLB |= ADC_SAMPNUM_t::ADC_SAMPNUM_ACC2_gc;
       break;
