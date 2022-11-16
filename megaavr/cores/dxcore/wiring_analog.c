@@ -871,6 +871,16 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
   }
 */
 
+const ADCConfig ADCConfig_default = {
+    .convMode = 0,
+    .muxNeg = 0x16, // A0
+    .resolution = 10,
+    .prescaler = ADC_DEFAULT_PRESCALER,
+    .sampleNum = 0,
+    .sampleDelay = 0,
+    .sampleLen = 14
+};
+
 void analogReadConfig(ADCConfig config) {
   if (config.convMode == 0) {
     analogReadEnableSingleEnded();
