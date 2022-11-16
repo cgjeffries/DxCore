@@ -30,6 +30,7 @@
   #include "HardwareI2C.h"
   #include "HardwareSerial.h"
   #include "IPAddress.h"
+  #include "LowPower.h"
   #include "Print.h"
   #include "Printable.h"
   #include "PluggableUSB.h"

@@ -30,8 +30,6 @@
 #include "UART_constants.h"
 #include "core_devices.h"
 #include "device_timer_pins.h"
-#include "low_power.h"
-
 /* Gives names to all the timer pins - relies on core_devices.h being included first.*/
 /* These names look like:
  * PIN_TCD0_WOC_DEFAULT
