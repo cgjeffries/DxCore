@@ -936,48 +936,61 @@ void analogReadEnableSingleEnded() {
 void analogReadPrescaler(uint8_t prescaler) {
   while (ADC0.COMMAND & ADC_STCONV_bm);
 
-  ADC0.CTRLC &= 0b11110000;   //Setting prescaler to 2
   switch (prescaler) {
   case 2:
-    //Empty case so that 2 doesn't through an error
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV2_gc;
     break;
   case 4:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV4_gc;
     break;
   case 8:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV8_gc;
     break;
   case 12:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV12_gc;
     break;
   case 16:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV16_gc;
     break;
   case 20:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV20_gc;
     break;
   case 24:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV24_gc;
     break;
   case 28:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV28_gc;
     break;
   case 32:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV32_gc;
     break;
   case 48:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV48_gc;
     break;
   case 64:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV64_gc;
     break;
   case 96:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV96_gc;
      break;
   case 128:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV128_gc;
     break;
   case 256:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
     ADC0.CTRLC |= ADC_PRESC_t::ADC_PRESC_DIV256_gc;
     break;
   default:
