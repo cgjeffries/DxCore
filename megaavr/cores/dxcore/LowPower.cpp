@@ -1,5 +1,4 @@
 #include "Arduino.h"
-#include "api/ArduinoAPI.h"
 
 // MALS-89
 void setSleepMode(SLPCTRL_SMODE_t sleepMode) {
