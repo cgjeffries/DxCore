@@ -107,3 +107,154 @@ void delaySleep(uint32_t millis){
   enterSleep(true); //explicitly flush serial buffers
   disableRTC();
 }
+
+///////////////////////////////////////////////////////////////////
+//                 Peripheral power functions                    //
+///////////////////////////////////////////////////////////////////
+/*       TCA        */
+void set_tca0_sleep(bool enable){
+  //single or split doesn't matter, CTRLA is in the same place either way
+  if(enable){
+    TCA0.SINGLE.CTRLA |= 0x80;
+  }
+  else{
+    TCA0.SINGLE.CTRLA &= ~(0x80);
+  }
+}
+
+void set_tca1_sleep(bool enable){
+  //single or split doesn't matter, CTRLA is in the same place either way
+  if(enable){
+    TCA1.SINGLE.CTRLA |= 0x80;
+  }
+  else{
+    TCA1.SINGLE.CTRLA &= ~(0x80);
+  }
+}
+
+/*       TCB        */
+void set_tcb0_sleep(bool enable){
+  if(enable){
+    TCB0.CTRLA |= 0x40;
+  }
+  else{
+    TCB0.CTRLA &= ~(0x40);
+  }
+}
+
+void set_tcb1_sleep(bool enable){
+  if(enable){
+    TCB1.CTRLA |= 0x40;
+  }
+  else{
+    TCB1.CTRLA &= ~(0x40);
+  }
+}
+
+/*       RTC        */
+void set_rtc_sleep(bool enable){
+  if(enable){
+    RTC.CTRLA |= 0x80;
+  }
+  else{
+    RTC.CTRLA &= ~(0x80);
+  }
+}
+
+/*       CCL        */
+void set_ccl_sleep(bool enable){
+  if(enable){
+    CCL.CTRLA |= 0x40;
+  }
+  else{
+    CCL.CTRLA &= ~(0x40);
+  }
+}
+
+/*       AC        */
+void set_ac0_sleep(bool enable){
+  if(enable){
+    AC0.CTRLA |= 0x80;
+  }
+  else{
+    AC0.CTRLA &= ~(0x80);
+  }
+}
+
+void set_ac1_sleep(bool enable){
+  if(enable){
+    AC1.CTRLA |= 0x80;
+  }
+  else{
+    AC1.CTRLA &= ~(0x80);
+  }
+}
+
+void set_ac2_sleep(bool enable){
+  if(enable){
+    AC2.CTRLA |= 0x80;
+  }
+  else{
+    AC2.CTRLA &= ~(0x80);
+  }
+}
+
+/*       ADC        */
+void set_adc0_sleep(bool enable){
+  if(enable){
+    ADC0.CTRLA |= 0x80;
+  }
+  else{
+    ADC0.CTRLA &= ~(0x80);
+  }
+}
+
+/*       DAC        */
+void set_dac0_sleep(bool enable){
+  if(enable){
+    DAC0.CTRLA |= 0x80;
+  }
+  else{
+    DAC0.CTRLA &= ~(0x80);
+  }
+}
+
+/*       ZCD        */
+void set_zcd0_sleep(bool enable){
+  if(enable){
+    ZCD0.CTRLA |= 0x80;
+  }
+  else{
+    ZCD0.CTRLA &= ~(0x80);
+  }
+}
+
+void set_zcd1_sleep(bool enable){
+  if(enable){
+    ZCD1.CTRLA |= 0x80;
+  }
+  else{
+    ZCD1.CTRLA &= ~(0x80);
+  }
+}
+
+/*
+Disables all peripherals in the system during sleep, including PWM timers. This should be called at the beginning of setup() then
+desired peripherals can be re-enabled as needed. This reduces power draw by ensuring unneeded peripherals are turned
+off during sleep.
+*/
+void disableAllPeripheralsDuringSleep(){
+  set_tca0_sleep(false);
+  set_tca1_sleep(false);
+  set_tcb0_sleep(false);
+  set_tcb1_sleep(false);
+  set_rtc_sleep(false);
+  set_ccl_sleep(false);
+  set_ac0_sleep(false);
+  set_ac1_sleep(false);
+  set_ac2_sleep(false);
+  set_adc0_sleep(false);
+  set_dac0_sleep(false);
+  set_zcd0_sleep(false);
+  set_zcd1_sleep(false);
+}
