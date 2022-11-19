@@ -88,6 +88,12 @@ off during sleep.
 void disableAllPeripheralsDuringSleep();
 
 /*
+Does the opposite of disableAllPeripheralsDuringSleep; enables all peripheral clocks in sleep. Will significantly
+increase sleep power consumption.
+*/
+void enableAllPeripheralsDuringSleep();
+
+/*
 Set the BOD (Brown Out Detection) to continuous mode for the fastest response, but also the highest power consumption.
 */
 void bodSetContinuous();
