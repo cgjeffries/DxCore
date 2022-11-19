@@ -1,5 +1,9 @@
 #include "Arduino.h"
 
+//////////////////////////////////////////////////////////////
+//                  General Sleep API                       //
+//////////////////////////////////////////////////////////////
+
 // MALS-89
 void setSleepMode(SLPCTRL_SMODE_t sleepMode) {
   SLPCTRL.CTRLA &= SLPCTRL_SEN_bm; // SLPCTRL_SEN_bm = 0x01 = 0b00000001
@@ -52,6 +56,10 @@ void sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial) {
   enableSleepMode();
   enterSleep(flushSerial);
 }
+
+//////////////////////////////////////////////////////////////
+//                  Common Sleep API                        //
+//////////////////////////////////////////////////////////////
 
 //delaySleep Helper functions
 
@@ -106,4 +114,202 @@ void delaySleep(uint32_t millis){
   enableSleepMode();
   enterSleep(true); //explicitly flush serial buffers
   disableRTC();
+}
+
+//////////////////////////////////////////////////////////////
+//                  Power Draw Utilities                    //
+//////////////////////////////////////////////////////////////
+
+/*       TCA        */
+void set_tca0_sleep(bool enable){
+  //single or split doesn't matter, CTRLA is in the same place either way
+  if(enable){
+    TCA0.SINGLE.CTRLA |= 0x80;
+  }
+  else{
+    TCA0.SINGLE.CTRLA &= ~(0x80);
+  }
+}
+
+#ifdef TCA1
+void set_tca1_sleep(bool enable){
+  //single or split doesn't matter, CTRLA is in the same place either way
+  if(enable){
+    TCA1.SINGLE.CTRLA |= 0x80;
+  }
+  else{
+    TCA1.SINGLE.CTRLA &= ~(0x80);
+  }
+}
+#endif
+
+/*       TCB        */
+void set_tcb0_sleep(bool enable){
+  if(enable){
+    TCB0.CTRLA |= 0x40;
+  }
+  else{
+    TCB0.CTRLA &= ~(0x40);
+  }
+}
+
+#ifdef TCB1
+void set_tcb1_sleep(bool enable){
+  if(enable){
+    TCB1.CTRLA |= 0x40;
+  }
+  else{
+    TCB1.CTRLA &= ~(0x40);
+  }
+}
+#endif
+
+/*       RTC        */
+void set_rtc_sleep(bool enable){
+  if(enable){
+    RTC.CTRLA |= 0x80;
+  }
+  else{
+    RTC.CTRLA &= ~(0x80);
+  }
+}
+
+/*       CCL        */
+void set_ccl_sleep(bool enable){
+  if(enable){
+    CCL.CTRLA |= 0x40;
+  }
+  else{
+    CCL.CTRLA &= ~(0x40);
+  }
+}
+
+/*       AC        */
+void set_ac0_sleep(bool enable){
+  if(enable){
+    AC0.CTRLA |= 0x80;
+  }
+  else{
+    AC0.CTRLA &= ~(0x80);
+  }
+}
+
+#ifdef AC1
+void set_ac1_sleep(bool enable){
+  if(enable){
+    AC1.CTRLA |= 0x80;
+  }
+  else{
+    AC1.CTRLA &= ~(0x80);
+  }
+}
+#endif
+
+#ifdef AC2
+void set_ac2_sleep(bool enable){
+  if(enable){
+    AC2.CTRLA |= 0x80;
+  }
+  else{
+    AC2.CTRLA &= ~(0x80);
+  }
+}
+#endif
+
+/*       ADC        */
+void set_adc0_sleep(bool enable){
+  if(enable){
+    ADC0.CTRLA |= 0x80;
+  }
+  else{
+    ADC0.CTRLA &= ~(0x80);
+  }
+}
+
+/*       DAC        */
+void set_dac0_sleep(bool enable){
+  if(enable){
+    DAC0.CTRLA |= 0x80;
+  }
+  else{
+    DAC0.CTRLA &= ~(0x80);
+  }
+}
+
+/*       ZCD        */
+void set_zcd0_sleep(bool enable){
+  if(enable){
+    ZCD0.CTRLA |= 0x80;
+  }
+  else{
+    ZCD0.CTRLA &= ~(0x80);
+  }
+}
+
+#ifdef ZCD1
+void set_zcd1_sleep(bool enable){
+  if(enable){
+    ZCD1.CTRLA |= 0x80;
+  }
+  else{
+    ZCD1.CTRLA &= ~(0x80);
+  }
+}
+#endif
+
+/*
+Disables all peripherals in the system during sleep, including PWM timers. This should be called at the beginning of setup() then
+desired peripherals can be re-enabled as needed. This reduces power draw by ensuring unneeded peripherals are turned
+off during sleep.
+*/
+void disableAllPeripheralsDuringSleep(){
+  set_tca0_sleep(false);
+  #ifdef TCA1
+  set_tca1_sleep(false);
+  #endif
+  set_tcb0_sleep(false);
+  #ifdef TCB1
+  set_tcb1_sleep(false);
+  #endif
+  set_rtc_sleep(false);
+  set_ccl_sleep(false);
+  set_ac0_sleep(false);
+  #ifdef AC1
+  set_ac1_sleep(false);
+  #endif
+  #ifdef AC2
+  set_ac2_sleep(false);
+  #endif
+  set_adc0_sleep(false);
+  set_dac0_sleep(false);
+  set_zcd0_sleep(false);
+  #ifdef ZCD1
+  set_zcd1_sleep(false);
+  #endif
+}
+
+void enableAllPeripheralsDuringSleep(){
+  set_tca0_sleep(true);
+  #ifdef TCA1
+  set_tca1_sleep(true);
+  #endif
+  set_tcb0_sleep(true);
+  #ifdef TCB1
+  set_tcb1_sleep(true);
+  #endif
+  set_rtc_sleep(true);
+  set_ccl_sleep(true);
+  set_ac0_sleep(true);
+  #ifdef AC1
+  set_ac1_sleep(true);
+  #endif
+  #ifdef AC2
+  set_ac2_sleep(true);
+  #endif
+  set_adc0_sleep(true);
+  set_dac0_sleep(true);
+  set_zcd0_sleep(true);
+  #ifdef ZCD1
+  set_zcd1_sleep(true);
+  #endif
 }
