@@ -107,3 +107,12 @@ void delaySleep(uint32_t millis){
   enterSleep(true); //explicitly flush serial buffers
   disableRTC();
 }
+
+
+/*
+Disables all input buffers. Input buffers consume power when the pins they serve change states, so disabling them
+entirely will prevent that source of power loss.
+*/
+void disableInputBuffers(){
+  PORT_ISC = PORT_ISC_t::PORT_ISC_INPUT_DISABLE_gc;
+}
