@@ -320,9 +320,9 @@ https://arduino.stackexchange.com/questions/36674/how-to-get-number-of-available
 https://forum.arduino.cc/t/where-can-i-find-the-pins_arduino-h-of-atmega328/385006
 Also, you may take a look at DxCore/megaavr/variants/48pin-standard/pins_arduino.h
 */
-void disableAllFloatingPins() {
+void disableAllFloatingPins(bool value) {
   for (uint32_t pinNum = 0; pinNum <= NUM_DIGITAL_PINS; pinNum++) {
     pinMode(pinNum, OUTPUT);
-    digitalWrite(pinNum, HIGH);
+    digitalWrite(pinNum, value);
   }
 }

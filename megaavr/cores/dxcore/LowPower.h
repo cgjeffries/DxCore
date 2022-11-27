@@ -74,11 +74,13 @@ entirely will prevent that source of power loss.
 void disableInputBuffers();
 
 /*
-Sets all PORT pins to OUTPUT & HIGH. This should be called at the beginning of setup() then afterwards pins can be 
+This should be called at the beginning of setup() then afterwards pins can be 
 configured as desired. Reduces power consumption by preventing unused pins being left as floating, which can cause
 them to rapidly toggle state, which causes input buffers to consume unnecessary power.
+Each pin is set to the OUTPUT pin mode. The user can set each pin to be LOW or HIGH depending on
+the board configuration.
 */
-void disableAllFloatingPins();
+void disableAllFloatingPins(bool value);
 
 /*
 Disables all peripherals in the system, including PWM timers. This should be called at the beginning of setup() then
