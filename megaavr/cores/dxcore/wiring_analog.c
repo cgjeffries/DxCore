@@ -25,7 +25,6 @@
 #include "wiring_private.h"
 #include "pins_arduino.h"
 #include "Arduino.h"
-#include "ADC.h"
 #include <avr/pgmspace.h>
 
 /* magic value passsed as the negative pin to tell the _analogReadEnh() (which implements both th new ADC
