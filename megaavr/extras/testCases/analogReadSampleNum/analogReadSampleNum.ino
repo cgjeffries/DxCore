@@ -26,7 +26,10 @@ void loop() {
 
 void printSample(uint8_t accumValue) {
   analogReadSampleNum(accumValue);
-  adc_value = analogRead(INPUT_PIN);
+  int adc_value = analogRead(A0);
   while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
-  da_Serial.println("Result with " + accumValue + " samples accumulated: " + adc_value);
+  da_Serial.print("Result with ");
+  da_Serial.print(accumValue);
+  da_Serial.print(" samples accumulated: ");
+  da_Serial.println(adc_value);
 }
