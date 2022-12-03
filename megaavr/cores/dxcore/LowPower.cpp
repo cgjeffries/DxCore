@@ -116,9 +116,40 @@ void delaySleep(uint32_t millis){
   disableRTC();
 }
 
+
+
 //////////////////////////////////////////////////////////////
 //                  Power Draw Utilities                    //
 //////////////////////////////////////////////////////////////
+
+/*
+Disables all input buffers. Input buffers consume power when the pins they serve change states, so disabling them
+entirely will prevent that source of power loss.
+*/
+void disableInputBuffers(){
+  //PORT_ISC = PORT_ISC_t::PORT_ISC_INPUT_DISABLE_gc;
+  PORTA.PINCONFIG = PORT_ISC_INPUT_DISABLE_gc; //pinconfig register is shared across all port banks
+  PORTA.PINCTRLUPD = 0xff;
+  PORTB.PINCTRLUPD = 0xff;
+  PORTC.PINCTRLUPD = 0xff;
+  PORTD.PINCTRLUPD = 0xff;
+  PORTE.PINCTRLUPD = 0xff;
+  PORTF.PINCTRLUPD = 0xff;
+}
+
+/*
+Enables all input buffers. Reverses the effects of disableInputBuffers().
+*/
+void enableInputBuffers(){
+  //PORT_ISC = PORT_ISC_t::PORT_ISC_INTDISABLE_gc; //default value
+  PORTA.PINCONFIG = PORT_ISC_t::PORT_ISC_INTDISABLE_gc;
+  PORTA.PINCTRLUPD = 0xff;
+  PORTB.PINCTRLUPD = 0xff;
+  PORTC.PINCTRLUPD = 0xff;
+  PORTD.PINCTRLUPD = 0xff;
+  PORTE.PINCTRLUPD = 0xff;
+  PORTF.PINCTRLUPD = 0xff;
+}
 
 /*       TCA        */
 void set_tca0_sleep(bool enable){

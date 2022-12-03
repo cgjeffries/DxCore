@@ -74,7 +74,12 @@ entirely will prevent that source of power loss.
 void disableInputBuffers();
 
 /*
-This should be called at the beginning of setup() then afterwards pins can be 
+Enables all input buffers. Reverses the effects of disableInputBuffers().
+*/
+void enableInputBuffers();
+
+/*
+Sets all PORT pins to LOW. This should be called at the beginning of setup() then afterwards pins can be 
 configured as desired. Reduces power consumption by preventing unused pins being left as floating, which can cause
 them to rapidly toggle state, which causes input buffers to consume unnecessary power.
 Each pin is set to the OUTPUT pin mode. The user can set each pin to be LOW or HIGH depending on
