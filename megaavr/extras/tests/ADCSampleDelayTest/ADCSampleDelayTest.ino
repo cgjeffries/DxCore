@@ -2,7 +2,7 @@
 #define VDD_REF 0x05
 #define INPUT_PIN A0
 #define LED_PIN 13
-#define SAMPLE_NUMBER 128
+#define SAMPLE_NUMBER 64
 
 void setup() {
   da_Serial.begin(38400);
