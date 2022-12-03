@@ -52,6 +52,11 @@ Sets the registers to fit the passed in configuration
 void analogReadConfig(ADCConfig config);
 
 /*
+Gets the registers to fit the passed in configuration
+*/
+ADCConfig getAnalogReadConfig();
+
+/*
 Specify an accumulation amount
 */
 void analogReadSampleNum(uint8_t numSamples);
