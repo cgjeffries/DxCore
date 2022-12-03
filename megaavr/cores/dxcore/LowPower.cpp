@@ -116,6 +116,21 @@ void delaySleep(uint32_t millis){
   disableRTC();
 }
 
+/*
+Place the device in Standby sleep mode until the specified byte is received by the Serial peripheral.
+*/
+//SFD documented page 371.
+//potential silicon bug with Start of Frame Detection (SFD). need to investigate further in silicon errata
+void sleepUntilSerial(uint8_t byte){
+  //enables start of frame detection
+  USART0.CTRLB |= USART_SFDEN_bm
+  
+  //need to enable serial here
+  //need to calculate time for SFD to start the oscillators
+
+  //need to hcheck interrupt flag to be USART_RXSIF_bm;
+}
+
 
 
 //////////////////////////////////////////////////////////////

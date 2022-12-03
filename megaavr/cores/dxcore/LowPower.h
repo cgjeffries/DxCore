@@ -58,7 +58,7 @@ Place the device in Standby sleep mode until the specified byte is recieved by t
 void sleepUntilSerial(uint8_t byte);
 
 /*
-Place the device in Standby sleep mode until the specified address is recieved by the TWI (I2C) peripheral.
+Place the device in Standby sleep mode until the specified address is received by the TWI (I2C) peripheral.
 */
 void sleepUntilTWIMatch(uint8_t address);
 
