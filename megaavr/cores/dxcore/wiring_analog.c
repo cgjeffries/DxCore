@@ -895,6 +895,22 @@ void analogReadConfig(ADCConfig config) {
   analogSampleDuration(config.sampleLen);
 }
 
+ADCConfig getAnalogReadConfig(){
+  int8_t presc_div[] = {1,3,7,11,15,19,23,27,31,47,63,95,127,255};
+  int8_t res[] = {12,10};
+
+  ADCConfig config;
+  config.convMode = ((ADC0.CTRLA & ADC_CONVMODE_bm) == 0x1<<ADC_CONVMODE_bp);
+  config.muxNeg = (ADC0.MUXNEG);
+  config.resolution = res[(ADC0.CTRLA & ADC_RESSEL_gm) >> ADC_RESSEL_gp];
+  config.prescaler = presc_div[ADC0.CTRLC] + 1;
+  config.sampleNum = ADC0.CTRLB == 0 ? 0 : 0x1<<ADC0.CTRLB;
+  config.sampleDelay = ADC0.CTRLD & ADC_SAMPDLY_gm;
+  config.sampleLen = ADC0.SAMPCTRL;
+
+  return config;
+}
+
 void analogReadSampleDelay(uint8_t delay) {
   while (ADC0.COMMAND & ADC_STCONV_bm) {}
   if (delay <= 15) {
