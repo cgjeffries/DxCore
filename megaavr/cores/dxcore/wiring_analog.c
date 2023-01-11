@@ -160,7 +160,6 @@ int16_t analogRead(uint8_t pin) {
   return ADC0.RES;
 }
 
-
 inline __attribute__((always_inline)) void check_valid_negative_pin(uint8_t pin) {
   if(__builtin_constant_p(pin)) {
     if (pin < 0x80) {
@@ -871,3 +870,169 @@ uint8_t digitalPinToTimerNow(uint8_t p) {
     }
   }
 */
+
+const ADCConfig ADCConfig_default = {
+    .convMode = 0,
+    .muxNeg = 0x16, // A0
+    .resolution = 10,
+    .prescaler = ADC_DEFAULT_PRESCALER,
+    .sampleNum = 0,
+    .sampleDelay = 0,
+    .sampleLen = 14
+};
+
+void analogReadConfig(ADCConfig config) {
+  if (config.convMode == 0) {
+    analogReadEnableSingleEnded();
+  } else {
+    analogReadEnableDifferential(config.muxNeg);
+  }
+
+  analogReadResolution(config.resolution);
+  analogReadPrescaler(config.prescaler);
+  analogReadSampleNum(config.sampleNum);
+  analogReadSampleDelay(config.sampleDelay);
+  analogSampleDuration(config.sampleLen);
+}
+
+ADCConfig getAnalogReadConfig(){
+  int8_t presc_div[] = {1,3,7,11,15,19,23,27,31,47,63,95,127,255};
+  int8_t res[] = {12,10};
+
+  ADCConfig config;
+  config.convMode = ((ADC0.CTRLA & ADC_CONVMODE_bm) == 0x1<<ADC_CONVMODE_bp);
+  config.muxNeg = (ADC0.MUXNEG);
+  config.resolution = res[(ADC0.CTRLA & ADC_RESSEL_gm) >> ADC_RESSEL_gp];
+  config.prescaler = presc_div[ADC0.CTRLC] + 1;
+  config.sampleNum = ADC0.CTRLB == 0 ? 0 : 0x1<<ADC0.CTRLB;
+  config.sampleDelay = ADC0.CTRLD & ADC_SAMPDLY_gm;
+  config.sampleLen = ADC0.SAMPCTRL;
+
+  return config;
+}
+
+void analogReadSampleDelay(uint8_t delay) {
+  while (ADC0.COMMAND & ADC_STCONV_bm) {}
+  if (delay <= 15) {
+    ADC0.CTRLD &= 0b11110000;
+    ADC0.CTRLD |= delay;
+  }
+}
+
+void analogReadEnableDifferential(uint8_t negPin) {
+  check_valid_negative_pin(negPin);
+
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  ADC0.CTRLA |= ADC_CONVMODE_bm;
+  ADC0.MUXNEG = negPin;
+}
+
+// Designed expecting user to pass in number of results, not number set to the register
+void analogReadSampleNum(uint8_t numSamples) {
+  while (ADC0.COMMAND & ADC_STCONV_bm) {}
+  ADC0.CTRLB &= 0b11111000;   //Setting accumulation to 0
+
+  switch (numSamples) {
+  case 0:
+    //Empty case so that 0 doesn't through an error
+    break;
+  case 1:
+    //Does nothing since 1 result accumulated is no accumulation
+    break;
+  case 2:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC2_gc;
+    break;
+  case 4:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC4_gc;
+    break;
+  case 8:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC8_gc;
+    break;
+  case 16:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC16_gc;
+    break;
+  case 32:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC32_gc;
+    break;
+  case 64:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC64_gc;
+    break;
+  case 128:
+    ADC0.CTRLB |= ADC_SAMPNUM_ACC128_gc;
+    break;
+  default:
+    break;
+  }
+}
+
+void analogReadEnableSingleEnded() {
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  ADC0.CTRLA &= ~ADC_CONVMODE_bm;
+}
+
+void analogReadPrescaler(uint16_t prescaler) {
+  while (ADC0.COMMAND & ADC_STCONV_bm);
+
+  switch (prescaler) {
+  case 2:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV2_gc;
+    break;
+  case 4:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV4_gc;
+    break;
+  case 8:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV8_gc;
+    break;
+  case 12:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV12_gc;
+    break;
+  case 16:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV16_gc;
+    break;
+  case 20:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV20_gc;
+    break;
+  case 24:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV24_gc;
+    break;
+  case 28:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV28_gc;
+    break;
+  case 32:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV32_gc;
+    break;
+  case 48:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV48_gc;
+    break;
+  case 64:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV64_gc;
+    break;
+  case 96:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV96_gc;
+     break;
+  case 128:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV128_gc;
+    break;
+  case 256:
+    ADC0.CTRLC &= 0b11110000;   //Clearing out pre-existing prescaler
+    ADC0.CTRLC |= ADC_PRESC_DIV256_gc;
+    break;
+  default:
+    break;
+  }
+}
