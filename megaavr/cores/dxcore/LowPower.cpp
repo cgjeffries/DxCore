@@ -122,8 +122,8 @@ Notes:
   * This function is the result of much suffering. Ask Charles for details...
   * Do we need to #define ERRATA_USART_WAKE so that the fix is applied in the ISR in UART.cpp?
   *  
-  * attempt at a TL:DR: The Start of Frame Detection Enable bit (SFDEN) basically just allows the RX complete interrupts to continue funcitoning while
-    the system is asleep. Without it set the USART will not be able to recieve data while the system is asleep. Unfortunately, there is a bug
+  * attempt at a TL:DR: The Start of Frame Detection Enable bit (SFDEN) basically just allows the RX complete interrupts to continue functioning while
+    the system is asleep. Without it set the USART will not be able to receive data while the system is asleep. Unfortunately, there is a bug
     in the silicon with this feature. From my understanding, if, while the system is awake, you attempt to read from the input buffer as a new byte
     is being received on the data line, AND the SFDEN bit is set, the data may/will be corrupted. To work around this bug, the SFD bit must be 
     unset before any read operations take place on the hardware buffer. The ISR for the RX Complete interrupt in DxCore does this automatically 
@@ -136,7 +136,7 @@ void sleepUntilSerial(uint8_t byte, HardwareSerial serialInstance){
   bool correctByteReceived == false;
   while(!correctByteReceived){
     serialInstance._hwserial_module->CTRLB |= USART_SFDEN_bm; //we must enable start of frame detection EVERY TIME because the bugfix in USART.cpp will disable it every time the system is woken from that source.
-    sleepSimple(SLPCTRL_SMODE_t::SLPCTRL_SMODE_STDBY_gc, true) //can we get away without flushing tx? Might take a while to flush everything cosntantly...
+    sleepSimple(SLPCTRL_SMODE_t::SLPCTRL_SMODE_STDBY_gc, true) //can we get away without flushing tx? Might take a while to flush everything constantly...
     //ISR handles incoming byte, stores it in buffer, then program execution resumes right here
     int receivedByte;
     while((recievedByte = serialInstance.peek()) != -1){ //we may have received multiple bytes in this time.
