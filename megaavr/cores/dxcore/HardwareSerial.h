@@ -292,6 +292,8 @@ class HardwareSerial : public HardwareSerial {
       static void _tx_data_empty_irq(HardwareSerial& uartClass);
     #endif
 
+    inline USART_t* getHWSerial(){return _hwserial_module;}
+
   private:
     void _poll_tx_data_empty(void);
     /* These all concern pin set handling */

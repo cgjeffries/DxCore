@@ -6,6 +6,12 @@ https://github.com/jnbrauer/SER401-2022-Group39-Documentation/blob/MALS-70-low-p
 #ifndef LOW_POWER_H
 #define LOW_POWER_H
 
+#define NOT_A_PIN         (255) //THIS IS A HACK
+
+#include "UART_constants.h" //THIS IS A HACK
+
+#include "HardwareSerial.h"
+
 //////////////////////////////////////////////////////////////
 //                  General Sleep API                       //
 //////////////////////////////////////////////////////////////
@@ -55,7 +61,7 @@ void delaySleep(uint32_t millis);
 /*
 Place the device in Standby sleep mode until the specified byte is recieved by the Serial peripheral.
 */
-void sleepUntilSerial(uint8_t byte, HardwareSerial serialInstance);
+void sleepUntilSerial(uint8_t byte, HardwareSerial &serialInstance);
 
 /*
 Place the device in Standby sleep mode until the specified address is recieved by the TWI (I2C) peripheral.

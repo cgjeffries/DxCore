@@ -116,6 +116,7 @@ void delaySleep(uint32_t millis){
   disableRTC();
 }
 
+
 /*
 Notes: 
   * STILL NEEDS TO BE TESTED
@@ -130,27 +131,32 @@ Notes:
     (if ERRATA_USART_WAKE is defined...), so we don't need to directly do that here. However, because the ISR unsets SFDEN and does not set it back,
     we must set SFDEN every time right before we go to sleep if we wish it to be active.
 */
-void sleepUntilSerial(uint8_t byte, HardwareSerial serialInstance){
+void sleepUntilSerial(uint8_t byte, UartClass &serialInstance){
   while(serialInstance.read() != -1){ //flush read buffer before sleeping
   }
-  bool correctByteReceived == false;
+  bool correctByteReceived = false;
+  //serialInstance.getHWSerial()->CTRLB |= USART_SFDEN_bm;
   while(!correctByteReceived){
-    serialInstance._hwserial_module->CTRLB |= USART_SFDEN_bm; //we must enable start of frame detection EVERY TIME because the bugfix in USART.cpp will disable it every time the system is woken from that source.
-    sleepSimple(SLPCTRL_SMODE_t::SLPCTRL_SMODE_STDBY_gc, true) //can we get away without flushing tx? Might take a while to flush everything constantly...
+    serialInstance.getHWSerial()->CTRLB |= USART_SFDEN_bm; //we must enable start of frame detection EVERY TIME because the bugfix in USART.cpp will disable it every time the system is woken from that source.
+    serialInstance.print(serialInstance.getHWSerial()->STATUS, BIN);
+    sleepSimple(SLPCTRL_SMODE_t::SLPCTRL_SMODE_STDBY_gc, true); //can we get away without flushing tx? Might take a while to flush everything constantly...
+    serialInstance.print(serialInstance.read(), HEX);
+    //while(serialInstance.peek() == -1){}
     //ISR handles incoming byte, stores it in buffer, then program execution resumes right here
     int receivedByte;
-    while((recievedByte = serialInstance.peek()) != -1){ //we may have received multiple bytes in this time.
-      if(recievedByte == byte){
+    while((receivedByte = serialInstance.peek()) != -1){ //we may have received multiple bytes in this time.
+      if(receivedByte == byte){
         correctByteReceived = true; //we found the correct byte so set the correct flag to true and break
         break;
       }
       else{
+        //serialInstance.print(receivedByte, HEX);
         serialInstance.read(); //flush the incorrect byte out
       }
     }
   }
 
-  serialInstance._hwserial_module->CTRLB &= ~USART_SFDEN_bm; //disable start of frame detection as a precaution (should already be disabled)
+  serialInstance.getHWSerial()->CTRLB &= ~USART_SFDEN_bm; //disable start of frame detection as a precaution (should already be disabled)
 }
 
 //////////////////////////////////////////////////////////////
