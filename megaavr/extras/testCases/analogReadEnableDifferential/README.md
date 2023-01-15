@@ -10,14 +10,15 @@ and demonstrates the output to serial monitor.
 
 ## Expected Output
 Single Ended Mode
- - `(Default)` output will be 0 indicating the ADC is in single-ended mode.
+ - `Single Ended Mode: (ConvMode = #)` output will be 0 indicating the ADC is 
+ in single-ended mode.
  - Average sample output is ~5v
 Differential Mode
- - `(Enabled)` output should be 1 indicating the analogReadEnableDifferential function 
-executed sucessfully and enabled differential mode on the ADC.
+ - `"Differential Mode: (ConvMode = #)` output should be 1 indicating the analogReadEnableDifferential function executed sucessfully and enabled 
+ differential mode on the ADC.
  - Average sample output is ~5v minus negative pin input
 
 ## Results
-Result sample output demonstrates the single ended mode outputting 5v and the 
-analogReadEnableDifferential function sucessfully enabling differential mode and 
-outputting the differential voltage (positive minus negative).
+Result sample output demonstrates the output variations in modifying the postive 
+and negative input volatges and toggling single ended or differential mode. The
+results trends are consistent with expected values.
