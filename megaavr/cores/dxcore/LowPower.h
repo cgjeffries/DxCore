@@ -53,12 +53,12 @@ reduced power draw.
 void delaySleep(uint32_t millis);
 
 /*
-Place the device in Standby sleep mode until the specified byte is recieved by the Serial peripheral.
+Place the device in Standby sleep mode until the specified byte is received by the Serial peripheral.
 */
 void sleepUntilSerial(uint8_t byte);
 
 /*
-Place the device in Standby sleep mode until the specified address is recieved by the TWI (I2C) peripheral.
+Place the device in Standby sleep mode until the specified address is received by the TWI (I2C) peripheral.
 */
 void sleepUntilTWIMatch(uint8_t address);
 

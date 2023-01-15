@@ -116,8 +116,6 @@ void delaySleep(uint32_t millis){
   disableRTC();
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //                  Power Draw Utilities                    //
 //////////////////////////////////////////////////////////////
@@ -356,4 +354,17 @@ void disableAllFloatingPins(bool value) {
     pinMode(pinNum, OUTPUT);
     digitalWrite(pinNum, value);
   }
+}
+
+/*
+Note - The TWI pin output override does not work as expected
+Source:
+https://github.com/SpenceKonde/DxCore/blob/master/megaavr/extras/Errata.md
+*/
+void sleepUntilTWIMatch(uint8_t address){
+  // Set the address the TWI will uses to interrupt the sleep mode here
+
+  sleepSimple(SLEEP_MODE_STANDBY, true);
+
+  // Either wake the microcontroller here or in another function by giving the TWI the address
 }
