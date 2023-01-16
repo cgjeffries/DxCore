@@ -5,7 +5,7 @@
 
 void printConvModeBit() {
   uint8_t convMode = (ADC0.CTRLA & ADC_CONVMODE_bm) >> 5;
-  da_Serial.print("Conversion mode:");
+  da_Serial.print("Conversion mode: ");
   da_Serial.println(convMode);
 }
 
@@ -14,7 +14,7 @@ void sample() {
 
   da_Serial.println("begin:");
   for (sample_index = 0; sample_index < SAMPLE_NUMBER; sample_index++) {
-    adc_value = analogRead(POS_PIN);
+    adc_value = analogRead(INPUT_PIN);
 
     da_Serial.printf(" %d\t%d", sample_index, adc_value/4);
     da_Serial.println();
@@ -28,12 +28,14 @@ void setup() {
 }
 
 void loop() {
-  da_Serial.println("---------- Entering single-ended mode: ----------")
-  analogReadEnableSingleEnded();  
+  da_Serial.println("---------- Entering single-ended mode: ----------");
+  analogReadEnableSingleEnded();
+  printConvModeBit();
   sample();
 
-  da_Serial.println("---------- Entering differential mode: ----------")
+  da_Serial.println("---------- Entering differential mode: ----------");
   analogReadEnableDifferential(NEGATIVE_PIN);
+  printConvModeBit();
   sample();
 
   delay(5000);
