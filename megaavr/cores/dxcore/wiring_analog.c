@@ -141,7 +141,6 @@ int16_t analogRead(uint8_t pin) {
   if (pin < 0x80) {
     pin = digitalPinToAnalogInput(pin);
     if(pin == NOT_A_PIN) return -1;
-
   }
   /* Select channel */
   ADC0.MUXPOS = ((pin & 0x7F) << ADC_MUXPOS_gp);
@@ -921,6 +920,9 @@ void analogReadSampleDelay(uint8_t delay) {
 
 void analogReadEnableDifferential(uint8_t negPin) {
   check_valid_negative_pin(negPin);
+  if (negPin < 0x80) {
+    negPin = digitalPinToAnalogInput(negPin);
+  }
 
   while (ADC0.COMMAND & ADC_STCONV_bm);
 
