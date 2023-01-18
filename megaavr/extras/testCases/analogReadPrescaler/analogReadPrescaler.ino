@@ -45,7 +45,7 @@ void loop() {
 }
 
 void printSample(uint8_t prescValue) {
-  analogReadSampleNum(prescValue);
+  analogReadPrescaler(prescValue);
   int adc_value = analogRead(A0);
   while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
   da_Serial.print("Result with ");
