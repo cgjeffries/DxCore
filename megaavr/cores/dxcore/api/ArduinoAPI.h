@@ -40,7 +40,6 @@
   #include "Udp.h"
   #include "USBAPI.h"
   #include "WCharacter.h"
-  #include "../../libraries/Wire/src/Wire.h" // Not a pretty solution, will need to clean this later
 #endif
 
 /* Standard C library includes */

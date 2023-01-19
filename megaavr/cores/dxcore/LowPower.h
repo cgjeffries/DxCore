@@ -59,8 +59,9 @@ void sleepUntilSerial(uint8_t byte);
 
 /*
 Place the device in Standby sleep mode until the specified address is received by the TWI (I2C) peripheral.
+Will be used in a .ino file for the slave microcontroller because Wire.h is too far to get to its folder
 */
-void sleepUntilTWIMatch(uint8_t address);
+//void sleepUntilTWIMatch(uint8_t address);
 
 
 //////////////////////////////////////////////////////////////
@@ -79,7 +80,7 @@ Enables all input buffers. Reverses the effects of disableInputBuffers().
 void enableInputBuffers();
 
 /*
-Sets all PORT pins to LOW. This should be called at the beginning of setup() then afterwards pins can be 
+This should be called at the beginning of setup() then afterwards pins can be 
 configured as desired. Reduces power consumption by preventing unused pins being left as floating, which can cause
 them to rapidly toggle state, which causes input buffers to consume unnecessary power.
 Each pin is set to the OUTPUT pin mode. The user can set each pin to be LOW or HIGH depending on

@@ -356,9 +356,7 @@ void disableAllFloatingPins(bool value) {
   }
 }
 
-void sleepUntilTWIMatch(uint8_t address){
-  Wire.begin(address);
-  sleepSimple(SLEEP_MODE_STANDBY, true);
-  // Next steps should have another device to use Wire.beginTransmission(address) and Wire.endTransmission()
-  // to wake this microcontroller
-}
+// Will be used in a .ino file for the slave microcontroller because Wire.h is too far to get to its folder
+// void sleepUntilTWIMatch(uint8_t address) {
+  
+// }
