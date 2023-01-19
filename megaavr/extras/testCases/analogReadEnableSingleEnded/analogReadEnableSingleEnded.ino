@@ -16,7 +16,7 @@ void sample() {
   for (sample_index = 0; sample_index < SAMPLE_NUMBER; sample_index++) {
     adc_value = analogRead(INPUT_PIN);
 
-    da_Serial.printf(" %d\t%d", sample_index, adc_value/4);
+    da_Serial.printf(" %d\t%d", sample_index, adc_value);
     da_Serial.println();
   }
 
