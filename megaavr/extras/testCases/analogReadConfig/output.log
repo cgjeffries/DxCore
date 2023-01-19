@@ -1,0 +1,13 @@
+Inital Analog Read Config:
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 1         | 120         | 12          | 128         | 2           | 1           | 12          |
+Analog Read Config (Set Default):
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 0         | 120         | 10          | 20          | 0           | 0           | 14          |
+EXPECTED OUTPUT:
+| 0         | 120         | 10          | 20          | 0           | 0           | 14          |
+Analog Read Config (Set Arbitrary Values):
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 1         | 120         | 12          | 128         | 2           | 1           | 12          |
+EXPECTED OUTPUT:
+| 1         | 10          | 12          | 128         | 2           | 1           | 12          |
