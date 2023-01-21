@@ -35,14 +35,16 @@ void loop() {
   }
 
   delay(500);
-}
 
-void printSample(uint8_t accumValue) {
-  analogReadSampleNum(accumValue);
-  int adc_value = analogRead(A0);
-  while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
-  da_Serial.print("Result with ");
-  da_Serial.print(accumValue);
-  da_Serial.print(" samples accumulated: ");
-  da_Serial.println(adc_value);
+
+  da_Serial.println("128 samples being accumulated");
+
+  for(int i = 0; i < 30; i++){
+    analogReadSampleNum(128);
+    int adc_value = analogRead(A0);
+    while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
+    da_Serial.println(adc_value);
+  }
+
+  delay(500);
 }
