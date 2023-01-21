@@ -37,6 +37,7 @@ void loop() {
   }
 
 void printConfigTable(ADCConfig config) {
+  da_Serial.printf("VREF: %d\n", getAnalogReference());
   da_Serial.printf("| %-10s| %-12s| %-12s| %-12s| %-12s| %-12s| %-12s|", 
   "convMode","muxNeg", "resolution", "prescaler",
   "sampleNum","sampleDelay","sampleLen");
