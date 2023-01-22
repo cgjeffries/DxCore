@@ -86,15 +86,31 @@ void setRTCPerTime(uint32_t millis){
   RTC.PER = (millis * 1024) / 1000;
 }
 
-//Is this something that we should be worried about? What if the user wants to define their own ISR?
-//using #define guards for this. If the user needs this ISR for themselves they can #undef the RTC_WAKE_ISR.
-#define RTC_WAKE_ISR
-#ifdef RTC_WAKE_ISR
+/*
+We need the ISR for the RTC CNT interrupt here so that we can wake from sleep. Without an ISR, the system will just crash upon getting the interrupt.
+However, ISRs can only be defined in one place and cannot be moved/redefined later on. This means that the user will not be able to define their own ISR
+for the RTC if they wish to do so. To make up for this, we add attachRTCCNTInterrupt(), which takes in a function pointer to a user-defined interrupt handler
+for the RTC CNT interrupt. Upon recieving the interrupt, the ISR will execute the specified function (if it exists), then return back to here to clear the flags
+and do other work that is necessary. In this way the user's ability to use the RTC for other purposes in maintained while still allowing us to always use 
+it for our purposes.
+*/
+volatile voidFuncPtr RTCCNTIntHandler = nullptr;
+
+void attachRTCCNTInterrupt(voidFuncPtr func){
+  RTCCNTIntHandler = func;
+}
+
+void detachRTCCNTInterrupt(){
+  RTCCNTIntHandler = nullptr;
+}
+
 ISR(RTC_CNT_vect)
 {
+  if(RTCCNTIntHandler != nullptr){
+    RTCCNTIntHandler();
+  }
   RTC.INTFLAGS = RTC_OVF_bm;          /* Clear interrupt flag by writing '1' (required) */
 }
-#endif
 
 //disable the RTC, that way it won't keep generating interrupts
 void disableRTC(){
