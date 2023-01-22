@@ -116,4 +116,14 @@ brown-out scenario.
 */
 void bodSetDisabled();
 
+
+//////////////////////////////////////////////////////////////
+//                      RTC Utilities                       //
+//////////////////////////////////////////////////////////////
+typedef void (*voidFuncPtr)(void);
+
+void attachRTCCNTInterrupt(voidFuncPtr func);
+
+void detachRTCCNTInterrupt();
+
 #endif
