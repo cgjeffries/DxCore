@@ -12,19 +12,23 @@ void printConvModeBit() {
 void sample() {
   int adc_value, sample_index;
 
-  da_Serial.println("begin:");
+  da_Serial.println("begin");
   for (sample_index = 0; sample_index < SAMPLE_NUMBER; sample_index++) {
     adc_value = analogRead(INPUT_PIN);
 
-    da_Serial.printf(" %d\t%d", sample_index, adc_value);
+    da_Serial.printf("%d %d", sample_index, adc_value);
     da_Serial.println();
   }
 
-  da_Serial.println("end:\n\n");
+  da_Serial.println("end\n\n");
 }
 
 void setup() {
   da_Serial.begin(38400);
+  analogReference(0x3);
+
+  pinMode(A3, OUTPUT);
+  digitalWrite(A3, HIGH);
 }
 
 void loop() {
