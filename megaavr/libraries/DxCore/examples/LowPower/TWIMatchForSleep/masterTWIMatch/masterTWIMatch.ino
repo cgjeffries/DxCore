@@ -1,46 +1,51 @@
 // Used master_write.ino from libraries\Wire\examples\master_write
-// in the DxCore package for reference
+// in the DxCore package by MX682X for reference
 
+// Master is ATmega328P XPlained Mini board
+// Recommended baud for Serial is 57600
 #include <Wire.h>
 
-#define TestSerial Serial1
+#define MasterSerial Serial
+
+unsigned long serialBaud = 57600;
 
 uint8_t twiAddress = 0x08;
-bool useInternalPullups = true;
+bool useInternalPullups = false;
 
-char serialInput[32];
+char serialInput[32] = {};
 int8_t serialInputLength = 0;
 
 int delayTime = 1000;
 
 void setup() {
-  TestSerial.begin(38400);
+  MasterSerial.begin(serialBaud);
   wakeWithTWIMatch(useInternalPullups);
 }
 
 void loop() {
-  delay(delayTime);
-  TestSerial.write(0x11);
-  if (TestSerial.available() > 0) {
+  if (MasterSerial.available() > 0) {
     readFromSerial();
     if (serialInputLength > 0) {
       sendDataWire(twiAddress);
     }
     serialInputLength = 0;
+    serialInput[32] = {};
+    MasterSerial.flush();
   }
 }
 
 void wakeWithTWIMatch(bool useInternalPullups) {
   if (useInternalPullups) {
-    Wire.usePullups(); // Not recommended, not as reliable as exteral pullups
+    //Wire.usePullups(); // Not included in the default Arduino libraries
   }
   Wire.begin();
 }
 
 void readFromSerial() {
+  MasterSerial.write("Reading message...\n");
   while (serialInputLength <= 30) {
-    while (TestSerial.available() == 0); // Wait until all bytes are taken in
-    char character = TestSerial.read();
+    while (MasterSerial.available() == 0); // Wait until all bytes are taken in
+    char character = MasterSerial.read();
     if (character == '\r' || character == '\n') {
       break;
     }
@@ -49,6 +54,12 @@ void readFromSerial() {
 }
 
 void sendDataWire(uint8_t twiAddress) {
+  MasterSerial.write("Sending message to slave!\n");
+
+  // Initial communication to wake up the sleeping slave microcontroller
+  Wire.beginTransmission(twiAddress);
+  Wire.endTransmission();
+
   Wire.beginTransmission(twiAddress);
   for (int inputIndex = 0; inputIndex < serialInputLength; inputIndex++) {
     Wire.write(serialInput[inputIndex]);
