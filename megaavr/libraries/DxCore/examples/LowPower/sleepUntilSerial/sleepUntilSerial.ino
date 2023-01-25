@@ -5,15 +5,15 @@ void setup(){
 }
 
 void loop() {
-  //delay(5000);
-  da_Serial.print("waiting for the character 'c'\n\r");
+  delay(2000);
+  da_Serial.printf("waiting for the character '~'\n\r");
+  delay(1000);
   //while(da_Serial.peek() == -1){}
-  sleepUntilSerial('c', da_Serial);
-  if(da_Serial.read() == 'c'){
+  sleepUntilSerial(0xBF , da_Serial);
+  if(da_Serial.read() == 0xbf){
     da_Serial.print("character recieved!\n\r");
   }
   else{
     da_Serial.print("wrong!\n\r");
   }
-  delay(2000);
 }

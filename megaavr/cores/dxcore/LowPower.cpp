@@ -140,7 +140,9 @@ void sleepUntilSerial(uint8_t byte, UartClass &serialInstance){
     serialInstance.getHWSerial()->CTRLB |= USART_SFDEN_bm; //we must enable start of frame detection EVERY TIME because the bugfix in USART.cpp will disable it every time the system is woken from that source.
     serialInstance.print(serialInstance.getHWSerial()->STATUS, BIN);
     sleepSimple(SLPCTRL_SMODE_t::SLPCTRL_SMODE_STDBY_gc, true); //can we get away without flushing tx? Might take a while to flush everything constantly...
-    serialInstance.print(serialInstance.read(), HEX);
+    serialInstance.print(serialInstance.peek(), HEX);
+    serialInstance.print("expectedByte:");
+    serialInstance.print(byte, HEX);
     //while(serialInstance.peek() == -1){}
     //ISR handles incoming byte, stores it in buffer, then program execution resumes right here
     int receivedByte;
