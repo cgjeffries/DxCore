@@ -37,10 +37,10 @@ void loop() {
   delay(500);
 
 
-  da_Serial.println("128 samples being accumulated");
+  da_Serial.println("64 samples being accumulated");
 
   for(int i = 0; i < 30; i++){
-    analogReadSampleNum(128);
+    analogReadSampleNum(64);
     int adc_value = analogRead(A0);
     while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
     da_Serial.println(adc_value);
