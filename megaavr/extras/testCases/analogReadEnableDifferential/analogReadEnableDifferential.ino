@@ -9,7 +9,7 @@ int NEG_PIN = A1; // select the input pin NEGATIVE (PD1 -> pins-arduino.h )
 
 // Calculate Expected Value
 double VAINP = 1.024; // POSITIVE (DAC) (Set reference in setDAC() for expected value)
-double VAINN = 1.0; // NEGATIVE (external pin PD0)
+double VAINN = 1.75; // NEGATIVE (external pin PD0)
 double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
 
 void setup() {
@@ -22,7 +22,7 @@ void loop() {
     setDAC();
     // Set VREF -> Magnitude of variance
     setVREF();
-    
+
     sample();
     printExpectedOutput();
     printSeperator();
@@ -31,18 +31,19 @@ void loop() {
   }
 
 void setDAC() {
-	// DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
-    /*| AVR Dx/Ex-series (all)                  | Voltage | Minimum Vdd | Mode # |
-      |-----------------------------------------|---------|-------------|--------|
-      | `VDD` (default)                         | Vcc/Vdd |             |      5 |
-      | `INTERNAL1V024`                         | 1.024 V |      2.5* V |      0 |
-      | `INTERNAL2V048`                         | 2.048 V |      2.5  V |      1 |
-      | `INTERNAL4V096`                         | 4.096 V |      4.55 V |      2 |
-      | `INTERNAL2V500`                         | 2.500 V |      2.7  V |      3 |
-      | `INTERNAL4V1` (alias of INTERNAL4V096)  | 4.006 V |      4.55 V |      2 |
-      | `EXTERNAL` (DA pin PD7)                 | VREF pin|        VREF |      6 |
+    // DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
+    /*  vref_1v024 = 0x00, // 1.024V
+        vref_2v048 = 0x01, // 2.048V
+        vref_2v500 = 0x02, // 2.5V
+        vref_2v5   = 0x02,
+        vref_4v096 = 0x03, // 4.096V
+        vref_vdd   = 0x07, // VDD as reference
         */
-    DACReference(INTERNAL1V024)
+    // DAC setting (expected voltage) POSITIVE
+    Comparator.input_n = comparator::in_n::dacref;    // Connect the negative pin to the DACREF voltage
+    Comparator.reference = comparator::ref::vref_1v024; // Set the DACREF voltage to 2V
+    Comparator.init();
+    Comparator.start();
 }
 
 
@@ -56,7 +57,7 @@ void setVREF(){
       | `INTERNAL4V096`                         | 4.096 V |      4.55 V |      2 |
       | `INTERNAL2V500`                         | 2.500 V |      2.7  V |      3 |
       | `INTERNAL4V1` (alias of INTERNAL4V096)  | 4.006 V |      4.55 V |      2 |
-      | `EXTERNAL` (DA pin PD7)                 | VREF pin|        VREF |      6 |
+      | `EXTERNAL` (DA pin PD7)                    | VREF pin|        VREF |      6 |
         */
     // VREF mode (magnitude)
     analogReference(INTERNAL1V024);
@@ -89,7 +90,6 @@ void printExpectedOutput() {
     da_Serial.printf("\tEXPECTED ADC value: ");
     da_Serial.println(expectedOutput);
 }
-
 
 void printSeperator() {
   da_Serial.println("-------------------------------------------------");

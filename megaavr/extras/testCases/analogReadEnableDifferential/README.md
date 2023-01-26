@@ -17,3 +17,9 @@ DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
  * VREF - Voltage Reference (pg 198 Data Sheet)
  
  The DAC Output Can *ONLY* Be Used as Input to the ADC Positive Input. (pg 508)
+ 
+## Instructions
+1. Connect signal generator with DC input set to 1.00V to negative pin (PD1)
+2. Upload the `analogReadEnableDifferential.ino` sketch to your AVR DA board.
+3. Open a serial monitor to view the recorded readings.
+
