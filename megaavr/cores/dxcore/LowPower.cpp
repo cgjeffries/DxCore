@@ -132,8 +132,6 @@ void delaySleep(uint32_t millis){
   disableRTC();
 }
 
-
-
 //////////////////////////////////////////////////////////////
 //                  Power Draw Utilities                    //
 //////////////////////////////////////////////////////////////
@@ -373,3 +371,8 @@ void disableAllFloatingPins(bool value) {
     digitalWrite(pinNum, value);
   }
 }
+
+// Will be used in a .ino file for the slave microcontroller because Wire.h is too far to get to its folder
+// void sleepUntilTWIMatch(uint8_t address) {
+  
+// }
