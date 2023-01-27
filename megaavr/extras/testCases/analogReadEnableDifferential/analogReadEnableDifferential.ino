@@ -8,7 +8,7 @@ int POS_PIN = ADC_DACREF0; //A0; // Positive pin (DAC or swap `A0;` to use exter
 int NEG_PIN = A1; // select the input pin NEGATIVE (PD1 -> pins-arduino.h )
 
 // Calculate Expected Value
-double VAINP = 1.024; // POSITIVE (DAC) (Set reference in setDAC() for expected value)
+double VAINP = 2.048; // POSITIVE (DAC) (Set reference in setDAC() for expected value)
 double VAINN = 1.75; // NEGATIVE (external pin PD0)
 double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
 
@@ -22,7 +22,14 @@ void loop() {
     setDAC();
     // Set VREF -> Magnitude of variance
     setVREF();
+    
+    da_Serial.println("10-bit resolution");
+    updateResolution(10);
+    sample();
+    printExpectedOutput();
 
+    da_Serial.println("12-bit resolution");
+    updateResolution(12);
     sample();
     printExpectedOutput();
     printSeperator();
@@ -41,9 +48,9 @@ void setDAC() {
         */
     // DAC setting (expected voltage) POSITIVE
     Comparator.input_n = comparator::in_n::dacref;    // Connect the negative pin to the DACREF voltage
-    Comparator.reference = comparator::ref::vref_1v024; // Set the DACREF voltage to 2V
+    Comparator.reference = comparator::ref::vref_2v048; // Set the DACREF voltage to 2V
     Comparator.init();
-    Comparator.start();
+    //Comparator.start();
 }
 
 
@@ -89,6 +96,19 @@ void printExpectedOutput() {
     }
     da_Serial.printf("\tEXPECTED ADC value: ");
     da_Serial.println(expectedOutput);
+}
+
+void updateResolution(uint8_t res) {
+  ADCConfig modConfig = {
+    .convMode = 1,
+    .muxNeg = NEG_PIN,
+    .resolution = res,
+    .prescaler = ADC_DEFAULT_PRESCALER,
+    .sampleNum = 0,
+    .sampleDelay = 0,
+    .sampleLen = 14
+  };
+  analogReadConfig(modConfig);
 }
 
 void printSeperator() {
