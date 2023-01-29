@@ -1,0 +1,35 @@
+10-bit resolution
+	ACTUAL ADC value  : -386
+	EXPECTED ADC value: 12.00
+12-bit resolution
+	ACTUAL ADC value  : -1543
+	EXPECTED ADC value: 48.00
+-------------------------------------------------
+10-bit resolution
+	ACTUAL ADC value  : -386
+	EXPECTED ADC value: 12.00
+12-bit resolution
+	ACTUAL ADC value  : -1543
+	EXPECTED ADC value: 48.00
+-------------------------------------------------
+10-bit resolution
+	ACTUAL ADC value  : -386
+	EXPECTED ADC value: 12.00
+12-bit resolution
+	ACTUAL ADC value  : -1543
+	EXPECTED ADC value: 48.00
+-------------------------------------------------
+10-bit resolution
+	ACTUAL ADC value  : -22
+	EXPECTED ADC value: 12.00
+12-bit resolution
+	ACTUAL ADC value  : -73
+	EXPECTED ADC value: 48.00
+-------------------------------------------------
+10-bit resolution
+	ACTUAL ADC value  : -22
+	EXPECTED ADC value: 12.00
+12-bit resolution
+	ACTUAL ADC value  : -73
+	EXPECTED ADC value: 48.00
+-------------------------------------------------
