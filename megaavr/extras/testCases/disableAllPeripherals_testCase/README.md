@@ -1,5 +1,5 @@
 # `disableAllPeripherals` Test Case
-This test case validates the `disableAllPeripherals` and `enableAllPeripherals` functions. 
+This test case validates the `disableAllPeripheralsDuringSleep` and `enableAllPeripheralsDuringSleep` functions. 
 
 ## Instructions
 1. Connect the Curiosity nano board to your computer
