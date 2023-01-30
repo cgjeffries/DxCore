@@ -2,7 +2,7 @@
 This test case validates the ability for the system to wake when the correct address is received over TWI
 
 ## Instructions
-1. Connect the I2C connections of the Curiosity nano board and an Arduino uno compatible board, such as an arduino nano, arduino uno, or atmega328p Xplained mini. No external pull-up resistors are required.
+1. Connect the I2C connections of the Curiosity nano board and an Arduino uno compatible board, such as an arduino nano, arduino uno, or atmega328p Xplained mini. No external pull-up resistors are required. Ensure that the Ground pins of each board are connected,
 2. Connect the Curiosity nano board to your computer
 3. Connect the curiosity nano power supply in series with an ammeter such as a multimeter or AVR power debugger (recommended)
 4. Download the "slave" sketch to the Curiosity nano board.
