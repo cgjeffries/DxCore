@@ -16,7 +16,7 @@ This test case validates the ability for the system to wake when the correct add
 Example:
 ![right_address.png](right_address.png)
 12. Revise the `twiAddress` in the master sketch to a valid value other than 0x08, such as 0x0A.
-13. Download the master sketch to the arduino uno compatible board.
+13. Download the master sketch to the Arduino Uno compatible board.
 14. Observe using the ammeter and the Curiosity nano board's serial output that it no longer wakes from sleep, as the address is not correct. If the ammeter is sufficiently fast reacting, you may see small power spikes as the system received the invalid address. 
 Example:
 ![right_address.png](wrong_address.png)
