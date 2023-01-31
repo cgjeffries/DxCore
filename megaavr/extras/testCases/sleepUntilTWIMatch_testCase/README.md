@@ -11,7 +11,7 @@ This test case validates the ability for the system to wake when the correct add
 7. Open a serial console in the COM port that the Curiosity Nano is on, either using the built-in serial console in the Arduino IDE or using a separate program like PuTTY. Set the Baud rate to **115200**.
 8. Observe that the Curiosity Nano sends messages when entering various sleep modes, as well as when the system receives a valid address over TWI.
 9. Open a serial console in the COM port that the Arduino Uno compatible board is on. Set the Baud rate to **57600**.
-10. Observe that the Arduino uno compatible board sends "Sending message to slave!" every 2 seconds.
+10. Observe that the Arduino Uno compatible board sends "Sending message to slave!" every 2 seconds.
 11. Verify using the ammeter that the system enters sleep, and then exits sleep upon the receipt of a valid TWI address, by default every 2 seconds. 
 Example:
 ![right_address.png](right_address.png)
