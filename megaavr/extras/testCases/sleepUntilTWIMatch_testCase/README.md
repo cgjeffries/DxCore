@@ -7,7 +7,7 @@ This test case validates the ability for the system to wake when the correct add
 3. Connect the Curiosity Nano power supply in series with an ammeter such as a multimeter or AVR power debugger (recommended)
 4. Download the "slave" sketch to the Curiosity Nano board.
 5. Connect the Arduino Uno compatible board to your computer
-6. Download the "master" sketch to the uno compatible board.
+6. Download the "master" sketch to the Uno compatible board.
 7. Open a serial console in the COM port that the Curiosity nano is on, either using the built-in serial console in the Arduino IDE or using a separate program like PuTTY. Set the Baud rate to **115200**.
 8. Observe that the curiosity nano sends messages when entering various sleep modes, as well as when the system receives a valid address over TWI.
 9. Open a serial console in the COM port that the Arduino uno compatible board is on. Set the Baud rate to **57600**.
