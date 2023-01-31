@@ -5,7 +5,7 @@ This test case validates the ability for the system to wake when the correct add
 1. Connect the I2C connections of the Curiosity Nano board and an Arduino Uno compatible board, such as an Arduino Nano, Arduino Uno, or ATmega328p XPlained Mini. No external pull-up resistors are required. Ensure that the ground pins of each board are connected,
 2. Connect the Curiosity Nano board to your computer
 3. Connect the Curiosity Nano power supply in series with an ammeter such as a multimeter or AVR power debugger (recommended)
-4. Download the "slave" sketch to the Curiosity nano board.
+4. Download the "slave" sketch to the Curiosity Nano board.
 5. Connect the Arduino uno compatible board to your computer
 6. Download the "master" sketch to the uno compatible board.
 7. Open a serial console in the COM port that the Curiosity nano is on, either using the built-in serial console in the Arduino IDE or using a separate program like PuTTY. Set the Baud rate to **115200**.
