@@ -21,21 +21,9 @@ void setup() {
 }
 
 void loop() {
-  currentTime = (millis() - startTime) % 1000;
-  da_Serial.println(currentTime);
-
-  if(currentTime % frequency == 0){
-    //Noise
-    analogReadSampleNum(64);
-    int adc_value = analogRead(A0)/64;
-    while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
-    da_Serial.println(adc_value);
-  }
-  else{
     //No Noise
     analogReadSampleNum(4);
     int adc_value = analogRead(A0)/4;
     while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
     da_Serial.println(adc_value);
-  }
 }
