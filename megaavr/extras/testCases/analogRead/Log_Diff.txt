@@ -1,0 +1,47 @@
+double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
+double EXTERNAL_PIN = 1.5; // POSITIVE input pin volatge
+double DAC_REF = 1.024; 
+
+// Expected output should match those from the datasheet however outputs are about double what the expected outputs should be.
+int16_t expected_10_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 512;
+int16_t expected_12_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 2048; 
+
+-------------------------------------------------------------------------------------------------
+
+             10 bit Differential test
+( ( 1.02 - 1.50 ) / 1.02 ) * 512 = -237
+-------------------------------------------------------------------------------------------------
+
+sampleNum Test
+Sample Number 1  --- (Expected, Result) -> (-237, -512)
+Sample Number 2  --- (Expected, Result) -> (-474, -960)
+Sample Number 4  --- (Expected, Result) -> (-948, -1719)
+Sample Number 8  --- (Expected, Result) -> (-1896, -3129)
+Sample Number 16  --- (Expected, Result) -> (-3792, -6150)
+Sample Number 32  --- (Expected, Result) -> (-7584, -11573)
+Sample Number 64  --- (Expected, Result) -> (-15168, -22855)
+Sample Number 128  --- (Expected, Result) -> (-30336, -22690)
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 1         | 0           | 10          | 2           | 128         | 1           | 1           |
+-------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------
+
+             12 bit Differential test
+( ( 1.02 - 1.50 ) / 1.02 ) * 2048 = -951
+-------------------------------------------------------------------------------------------------
+
+sampleNum Test
+Sample Number 1  --- (Expected, Result) -> (-951, -2048)
+Sample Number 2  --- (Expected, Result) -> (-1902, -3829)
+Sample Number 4  --- (Expected, Result) -> (-3804, -6856)
+Sample Number 8  --- (Expected, Result) -> (-7608, -12561)
+Sample Number 16  --- (Expected, Result) -> (-15216, -23825)
+Sample Number 32  --- (Expected, Result) -> (-30432, -23188)
+Sample Number 64  --- (Expected, Result) -> (4672, -22829)
+Sample Number 128  --- (Expected, Result) -> (9344, -23427)
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 1         | 0           | 12          | 2           | 128         | 1           | 1           |
+-------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------
