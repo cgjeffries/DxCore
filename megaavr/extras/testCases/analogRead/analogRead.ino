@@ -12,17 +12,17 @@ int RES = 10;
 int CONVMODE = 0;
 
 // 1.024, 2.048, 4.096, 2.500, 4.006 
-double VADCREF = 2.048; // VREF;  (Set VREF in setVREF() for expected value)
-double EXTERNAL_PIN = 1.5; // POSITIVE input pin volatge
-double DAC_REF = 1.024; 
+double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
+double EXTERNAL_PIN = 1.25; // POSITIVE input pin volatge
+double DAC_REF = 2.500; 
 // modify to match input pin voltage (ie. if VREF is 1.024v and input pin is 0.5v expected should be ~512) 
 // expected = VREF / EXTERNAL_PIN
 int16_t expected = 0; 
 uint16_t expected_10_single = ( EXTERNAL_PIN / VADCREF ) * 1024; 
 uint16_t expected_12_single = ( EXTERNAL_PIN / VADCREF ) * 4096; 
-// Differential equations reversed from datasheet becuase DAC must be positive input.
-int16_t expected_10_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 512;
-int16_t expected_12_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 2048; 
+// Differential equations "reversed" from datasheet, DAC must be positive input, external negative.
+int16_t expected_10_diff = ( ( (EXTERNAL_PIN - DAC_REF) / VADCREF ) * 512 );
+int16_t expected_12_diff = ( ( (EXTERNAL_PIN - DAC_REF) / VADCREF ) * 2048 ); 
 
 
 void setup() {
@@ -118,6 +118,7 @@ void loop() {
     RES = 10;
     CONVMODE = 1;
     POS_PIN = DIFF_POS;
+    expected = 0;
     expected = expected_10_diff;
     printSeperator();
     da_Serial.println("             10 bit Differential test");
@@ -180,9 +181,9 @@ void print12_single(){
 }
 void print10_diff(){
   da_Serial.print("( ( ");
-  da_Serial.print(DAC_REF);
-  da_Serial.print(" - ");
   da_Serial.print(EXTERNAL_PIN);
+  da_Serial.print(" - ");
+  da_Serial.print(DAC_REF);
   da_Serial.print(" ) / ");
   da_Serial.print( VADCREF);
   da_Serial.print(" ) * 512 = ");
@@ -191,9 +192,9 @@ void print10_diff(){
 }
 void print12_diff(){
   da_Serial.print("( ( ");
-  da_Serial.print(DAC_REF);
-  da_Serial.print(" - ");
   da_Serial.print(EXTERNAL_PIN);
+  da_Serial.print(" - ");
+  da_Serial.print(DAC_REF);  
   da_Serial.print(" ) / ");
   da_Serial.print( VADCREF);
   da_Serial.print(" ) * 2048 = ");
@@ -277,23 +278,23 @@ void setDAC(double ref) {
         vref_4v096 = 0x03, // 4.096V
         vref_vdd   = 0x07, // VDD as reference
         */
-    // DAC setting (expected voltage) POSITIVE
-    Comparator.input_n = comparator::in_n::dacref;    // Connect the negative pin to the DACREF voltage
+    Comparator.input_n = comparator::in_n::dacref;
 
     if (ref == 1.024){
-      Comparator.reference = comparator::ref::vref_1v024; // Set the DACREF voltage to 2V
+      Comparator.reference = comparator::ref::vref_1v024;
     } else if(ref == 2.048){
-      Comparator.reference = comparator::ref::vref_2v048; // Set the DACREF voltage to 2V
+      da_Serial.print("REF IS 2.048");
+      Comparator.reference = comparator::ref::vref_2v048;
     } else if(ref == 2.500){
-      Comparator.reference = comparator::ref::vref_2v500; // Set the DACREF voltage to 2V
+      Comparator.reference = comparator::ref::vref_2v500;
     } else if(ref == 4.096){
-      Comparator.reference = comparator::ref::vref_4v096; // Set the DACREF voltage to 2V
+      Comparator.reference = comparator::ref::vref_4v096;
     } else {
-      Comparator.reference = comparator::ref::vref_1v024; // Set the DACREF voltage to 2V
+      Comparator.reference = comparator::ref::vref_1v024; 
     } 
     
     Comparator.init();
-    //Comparator.start();
+    Comparator.start();
 }
 
 void setVREF(double ref){
