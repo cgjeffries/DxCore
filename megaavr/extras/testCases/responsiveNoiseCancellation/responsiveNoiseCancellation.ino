@@ -1,12 +1,12 @@
 /*
-  Program testing periodic noise
+  Program testing responsive noise cancellation
 */
 
 #define da_Serial Serial1
 
 int previousReading = -1;
-double marginOfError = 0.1;
-bool noiseFlag = false;
+double marginOfError = 0.05;
+bool recentNoise = false;
 int numNoisyReadings = 0;
 
 void setup() {
@@ -17,7 +17,7 @@ void setup() {
 }
 
 void loop() {
-  if(noiseFlag == false){
+  if(recentNoise == false){
     readADC(1);
   }
   else{
@@ -31,14 +31,15 @@ void readADC (int numSamples){
   while((ADC0.COMMAND & 0b00000001) > 0){} //Wait for conversion to finish
   da_Serial.println(adc_value);
 
-  if(noiseFlag == true){
+  if(recentNoise == true){
     numNoisyReadings++;
     if(numNoisyReadings > 500){
-      noiseFlag = false;
+      recentNoise = false;
+      numNoisyReadings = 0;
     }
   }
   else if((adc_value > (previousReading + previousReading * marginOfError) || adc_value < (previousReading - previousReading * marginOfError)) && previousReading != -1){
-    noiseFlag = true;
+    recentNoise = true;
   }
   previousReading = adc_value;
 }
