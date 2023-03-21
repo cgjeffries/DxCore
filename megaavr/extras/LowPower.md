@@ -1,332 +1,634 @@
 # LowPower.cpp
-This document is a comprehensive list of all the functions from LowPower.cpp. Each function includes descriptions for how they change the hardware to decrease the power draw for DxCore microcontrollers.
+    This document is a comprehensive list of all the functions from LowPower.cpp. Each function includes descriptions for how they change the hardware to decrease the power draw for DxCore microcontrollers.
+    All information for the hardware changes and interrupts can be found in the AVR128DA48 datasheet from Microchip which can be found here: https://www.microchip.com/en-us/product/AVR128DA48
 
 ## setSleepMode(SLPCTRL_SMODE_t sleepMode)
 Description: 
 
-Arguments: 
+    Sets the microcontroller's specified sleep mode, but does not enter sleep mode automatically.
 
-Returns: nothing
+Arguments: 
+    
+    sleepMode - the type of sleep mode the microcontroller will use when it enters sleep mode.
+
+Returns: 
+    
+    nothing
 
 Hardware Changes: 
 
-Notes:
+    On the Sleep Controller (SLPCTRL), Control A (CTRLA) register, Sleep Enable (SEN, bit 0) will be set to 1 if it was already on or turned off. Also, bit 1, bit 2, or bit 3 will be on depending on the given sleep mode being Idle, Standby, or Power-Down repectively.
+
+Notes: 
+    
+    This function must be called before enableSleepMode() and enterSleepMode(bool flushSerial). Also, the different sleep modes are from DxCore/megaavr/extras/ioheaders/ for the board's respective header file such as ioavr128da48.h for the AVR128DA48.
 
 ## enableSleepMode()
 Description: 
 
+    Enables sleep mode to be activated. It does not cause the microcontroller to go to sleep.
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    SLPCTRL, Control A register, SEN (bit 0) will be set to 1.
+
 Notes:
+
+    This function must be called before enterSleepMode(bool flushSerial).
 
 ## disableSleepMode()
 Description: 
 
+    Disables sleep mode to be activated.
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+    
+    nothing
 
 Hardware Changes: 
 
+    SLPCTRL, Control A register, SEN (bit 0) will be set to 0.
+
 Notes:
+
+    nothing
 
 ## enterSleep(bool flushSerial)
 Description: 
 
+    If SLPCTRL, Control A register, SEN (bit 0) is set to 1 by enableSleepMode(), then the microcontroller will sleep using the sleep mode that was provided from setSleepMode(SLPCTRL_SMODE_t sleepMode).
+
 Arguments: 
 
-Returns: nothing
+    flushSerial - If set to true, the function will flush all the serial ports of the microcontroller. Serial 0 through 5 will be flushed if flushSerial is true.
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    When the microcontroller enters Idle mode, all peripherals and clocks will continue to run except for the CPU peripheral. In Standby mode, only the TRC, EDT, BOD, EVSYS, CCL, ACn, ADCn, DACn, PTC, ZCDn, TCAn, and TCBn peripherals will run. Plus, the main clock, RTC clock, WDT oscillator, BOD oscillator, and CCL clock will continue to run in Standby mode. In Power-Down mode, only the TRC, EDT, BOD, and EVSYS peripherals will run while the RTC clock, WDT oscillator, and BOD oscillator will continue to run.
+
 Notes:
+
+    The microcontroller will wake up to different sources depending on the sleep mode given. In Idle mode, all interrupts will wake up the microcontroller. In Standby, only the Port Pin, BOD VLM, RTC, TWI Address Match, CCL, USART Start-Of-Frame, TCAn, TCBn, ACn, ADCn, PTC, and ZCD interrupts will work to wake up the microcontroller. In Power-Down, if VREGCTRL (Voltage Regulator Control)
 
 ## sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial)
 Description: 
 
+    Calls setSleepMode(SLPCTRL_SMODE_t sleepMode), enableSleepMode(), and enterSleep(bool flushSerial = true) to set the sleep mode, enable it, and enter it in one function.
+
 Arguments: 
 
-Returns: nothing
+    sleepMode - the type of sleep mode the microcontroller will use when it enters sleep mode.
+    flushSerial - If set to true, the function will flush all the serial ports of the microcontroller. Serial 0 through 5 will be flushed if flushSerial is true.
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    Refer to the hardware changes from the setSleepMode(SLPCTRL_SMODE_t sleepMode), enableSleepMode(), and enterSleep(bool flushSerial = true) since this function uses all three of them in succession.
+
 Notes:
+
+    nothing
 
 ## RTCSync()
 Description: 
 
+    This supplementary function is used to wait for the RTC register to sync with main clock to prevent odd behavior if the RTC runs on a different clock.
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    The RTC register syncs with the main clock.
+
 Notes:
+
+    This function is used in wakeUsingRTC(), setRTCPerTime(uint32_t millis), and disableRTC().
 
 ## wakeUsingRTC()
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    nothing
 
 ## setRTCPerTime(uint32_t millis)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## attachRTCCNTInterrupt(voidFuncPtr func)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## detachRTCCNTInterrupt()
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## disableRTC()
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## delaySleep(uint32_t millis)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## disableInputBuffers()
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## enableInputBuffers()
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_tca0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_tca1_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_tcb0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_tcb1_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_rtc_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_ccl_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_ac0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_ac1_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_ac2_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_adc0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_dac0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_zcd0_sleep(bool enable)
 Description: 
 
+    -
+
 Arguments: 
 
-Returns: nothing
+    -
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    -
+
 Notes:
+
+    -
 
 ## set_zcd1_sleep(bool enable)
 Description: 
 
+    Enables/disables the peripheral ZCD1.
+
 Arguments: 
 
-Returns: nothing
+    enable - sets ZCD1.CTRLA at bit position 3 to be 0 or 1.
+
+Returns: 
+    
+    nothing
 
 Hardware Changes: 
 
+    ZCD1.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
+
 Notes:
+
+    This function is only available if ZCD1 is defined for the microcontroller.
 
 ## disableAllPeripheralsDuringSleep()
 Description: 
 
+    Disables all possible peripherals of the microcontroller to reduce power draw while the microcontroller is asleep.
+
 Arguments: 
 
-Returns: nothing
+    nothing
 
-Hardware Changes: 
+Returns: 
+
+    nothing
+
+Hardware Changes:
+
+    Peripherals disabled include TCA0, TCA1, TCB0, TCB1, RTC, CCL, AC0, AC1, AC2, ADC0, DAC0, ZCD0, and ZCD1.
 
 Notes:
+
+    It is recommended to call this function at the beginning of the program.
 
 ## enableAllPeripheralsDuringSleep()
 Description: 
 
+    Enables all possible peripherals of the microcontoller during sleep.
+
 Arguments: 
 
-Returns: nothing
+    nothing
+
+Returns: 
+    
+    nothing
 
 Hardware Changes: 
 
+    Peripherals enabled include TCA0, TCA1, TCB0, TCB1, RTC, CCL, AC0, AC1, AC2, ADC0, DAC0, ZCD0, and ZCD1.
+
 Notes:
+
+    This function reversed the effects of disableAllPeripheralsDuringSleep().
 
 ## disableAllFloatingPins(bool value)
 Description: 
 
-Arguments: 
+    This function sets each pin on the microcontroller board to be OUTPUT and 0 or 1 depending on the value variable as a means to remove floating pins to lower the power draw of the board.
 
-Returns: nothing
+Arguments:
+
+    value - set each OUTPUT pin to be LOW or HIGH depending on the board configuration to lower the power draw of the microcontroller board.
+
+Returns: 
+
+    nothing
 
 Hardware Changes: 
 
+    All pins of the microcontroller board will be set to OUTPUT and 0 or 1 depending on the given value variable.
+
 Notes:
+
+    This function should be called at the beginning of the program so that it does not unintentionally change the settings of the pins.
