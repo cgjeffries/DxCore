@@ -17,7 +17,7 @@ Returns:
 
 Hardware Changes: 
 
-    On the Sleep Controller (SLPCTRL), Control A (CTRLA) register, Sleep Enable (SEN, bit 0) will be set to 1 if it was already on or turned off. Also, bit 1, bit 2, or bit 3 will be on depending on the given sleep mode being Idle, Standby, or Power-Down repectively.
+    On the Sleep Controller (SLPCTRL), Control A (CTRLA) register, Sleep Enable (SEN, bit 0) will be set to 1 if it was already on or turned off. Also, bit 1, bit 2, or bit 3 will be on depending on the given sleep mode being Idle, Standby, or Power-Down respectively.
 
 Notes: 
     
@@ -132,7 +132,7 @@ Notes:
 ## wakeUsingRTC()
 Description: 
 
-    -
+    This function will enable the RTC and its overflow interrupt to wake up the sleeping microcontroller in Standby mode.
 
 Arguments: 
 
@@ -144,7 +144,7 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    The RTC.CLKSEL (RTC's Clock Selection at 0x07) is set to the clock source OSC32K (set as 0x01 for the CLKSEL bits) which is 1.024 kHz. Also, the RTC.INTCTRL (RTC's Interrupt Control at 0x02) is enabled by setting its bit 0 to the value of 1. Finally, the RTC.CTRLA will enable the RTC for Standby mode.
 
 Notes:
 
@@ -153,11 +153,11 @@ Notes:
 ## setRTCPerTime(uint32_t millis)
 Description: 
 
-    -
+    This function uses 1024 ticks per second to scale the millis to RTC ticks.
 
 Arguments: 
 
-    -
+    millis - the number of milliseconds.
 
 Returns: 
 
@@ -165,20 +165,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    RTC.PER (RTC's Period at 0x0A) will be set to the given milliseconds times 1024 ticks per second.
 
 Notes:
 
-    -
+    nothing
 
 ## attachRTCCNTInterrupt(voidFuncPtr func)
 Description: 
 
-    -
+    Sets the variable RTCCNTIntHandler to a voidFuncPtr.
 
 Arguments: 
 
-    -
+    func - the voidFuncPtr to be kept.
 
 Returns: 
 
@@ -186,16 +186,16 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    nothing
 
 Notes:
 
-    -
+    nothing
 
 ## detachRTCCNTInterrupt()
 Description: 
 
-    -
+    Sets the variable RTCCNTIntHandler to a nullptr.
 
 Arguments: 
 
@@ -207,11 +207,11 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    nothing
 
 Notes:
 
-    -
+    nothing
 
 ## disableRTC()
 Description: 
@@ -237,11 +237,11 @@ Notes:
 ## delaySleep(uint32_t millis)
 Description: 
 
-    -
+    Calling this function will set the microcontroller to Standby sleep mode for a given number of milliseconds.
 
 Arguments: 
 
-    -
+    millis - the number of milliseconds that the microcontroller will sleep before waking up.
 
 Returns: 
 
@@ -249,16 +249,16 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    Hardware changes are from the use of these functions in this order: setRTCPerTime, wakeUsingRTC, setSleepMode, enableSleepMode, enterSleepMode, and disableRTC.
 
 Notes:
 
-    -
+    nothing
 
 ## disableInputBuffers()
 Description: 
 
-    -
+    Using this function will lower the microcontroller's power draw by disabling all of its input buffers.
 
 Arguments: 
 
@@ -270,16 +270,16 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    Only PORTA.PINCONFIG (Multi-Pin Configuration located at 0x0B) is disabled since this register is shared among all the ports. Then, PORTA through PORTF's PINCTRLUPD (Multi-Pin Control Update Mask) is set to 0xFF.
 
 Notes:
 
-    -
+    Disabling the input buffers will ensure that they do not consume excess power when their pins change state.
 
 ## enableInputBuffers()
 Description: 
 
-    -
+    Call the function to enable all input buffers for all ports.
 
 Arguments: 
 
@@ -291,11 +291,11 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    Only PORTA.PINCONFIG (Multi-Pin Configuration located at 0x0B) is enabled since this register is shared among all the ports. Then, PORTA through PORTF's PINCTRLUPD (Multi-Pin Control Update Mask) is set to 0xFF.
 
 Notes:
 
-    -
+    This is the opposite of disableInputBuffers(), so the power draw of the microcontroller will increase.
 
 ## set_tca0_sleep(bool enable)
 Description: 
@@ -595,7 +595,7 @@ Notes:
 ## enableAllPeripheralsDuringSleep()
 Description: 
 
-    Enables all possible peripherals of the microcontoller during sleep.
+    Enables all possible peripherals of the microcontroller during sleep.
 
 Arguments: 
 
@@ -616,7 +616,7 @@ Notes:
 ## disableAllFloatingPins(bool value)
 Description: 
 
-    This function sets each pin on the microcontroller board to be OUTPUT and 0 or 1 depending on the value variable as a means to remove floating pins to lower the power draw of the board.
+    This function sets each pin on the microcontroller board to be OUTPUT and 0 or 1 depending on the value variable to remove floating pins to lower the power draw of the board.
 
 Arguments:
 
