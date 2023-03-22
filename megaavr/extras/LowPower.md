@@ -216,7 +216,7 @@ Notes:
 ## disableRTC()
 Description: 
 
-    -
+    This function will disable the microcontroller's Real-Time Counter (RTC) to prevent interrupt generation from this peripheral.
 
 Arguments: 
 
@@ -228,11 +228,11 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    RTC.CTRLA will be set to 0 across all of its bits.
 
 Notes:
 
-    -
+    nothing
 
 ## delaySleep(uint32_t millis)
 Description: 
@@ -300,11 +300,11 @@ Notes:
 ## set_tca0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral TCA0 (Timer/Counter Type A instance 0, base address is 0x0A00).
 
 Arguments: 
 
-    -
+    enable - sets TCA0.SINGLE.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -312,20 +312,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    TCA0.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    TCA0.CTRLA will stay in its place during single or split mode.
 
 ## set_tca1_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral TCA1 (Timer/Counter Type A instance 1, base address is 0x0A40).
 
 Arguments: 
 
-    -
+    enable - sets TCA1.SINGLE.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -333,20 +333,21 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    TCA1.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
+    TCA1.CTRLA will stay in its place during single or split mode.
 
 Notes:
 
-    -
+    This function is only available if TCA1 is defined for the microcontroller.
 
 ## set_tcb0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral TCB0 (Timer/Counter Type B instance 0, base address is 0x0B00).
 
 Arguments: 
 
-    -
+    enable - sets TCB0.CTRLA at bit position 2 to be 0 or 1.
 
 Returns: 
 
@@ -354,20 +355,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    TCB0.CTRLA at bit position 2 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_tcb1_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral TCB1 (Timer/Counter Type B instance 1, base address is 0x0B10).
 
 Arguments: 
 
-    -
+    enable - sets TCB1.CTRLA at bit position 2 to be 0 or 1.
 
 Returns: 
 
@@ -375,20 +376,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    TCB1.CTRLA at bit position 2 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    This function is only available if TCB1 is defined for the microcontroller.
 
 ## set_rtc_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral RTC (Real-Time Counter, base address is 0x0140).
 
 Arguments: 
 
-    -
+    enable - sets RTC.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -396,20 +397,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    RTC.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_ccl_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral CCL (Configurable Custom Logic, base address is 0x01C0).
 
 Arguments: 
 
-    -
+    enable - sets CCL.CTRLA at bit position 2 to be 0 or 1.
 
 Returns: 
 
@@ -417,20 +418,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    CCL.CTRLA at bit position 2 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_ac0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral AC0 (Analog Comparator 0, base address is 0x0680).
 
 Arguments: 
 
-    -
+    enable - sets AC0.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -438,20 +439,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    AC0.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_ac1_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral AC1 (Analog Comparator 1, base address is 0x0688).
 
 Arguments: 
 
-    -
+    enable - sets AC1.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -459,20 +460,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    AC1.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    This function is only available if AC1 is defined for the microcontroller.
 
 ## set_ac2_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral AC2 (Analog Comparator 2, base address is 0x0690).
 
 Arguments: 
 
-    -
+    enable - sets AC2.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -480,20 +481,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    AC2.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    This function is only available if AC2 is defined for the microcontroller.
 
 ## set_adc0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral ADC0 (Analog-to-Digital Converter 0, base address is 0x0600).
 
 Arguments: 
 
-    -
+    enable - sets ADC0.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -501,20 +502,20 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    ADC0.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_dac0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral DAC0 (Digital-to-Analog converter 0, base address is 0x06A0).
 
 Arguments: 
 
-    -
+    enable - sets DAC0.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
 
@@ -522,37 +523,37 @@ Returns:
 
 Hardware Changes: 
 
-    -
+    DAC0.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_zcd0_sleep(bool enable)
 Description: 
 
-    -
+    Enables/disables the peripheral ZCD0 (Zero-Cross Detector 0, base address is 0x06C0).
 
 Arguments: 
 
-    -
+    enable - sets ZCD0.CTRLA at bit position 3 to be 0 or 1.
 
 Returns: 
-
+    
     nothing
 
 Hardware Changes: 
 
-    -
+    ZCD0.CTRLA at bit position 3 will be enabled/disabled depending on the enable variable.
 
 Notes:
 
-    -
+    nothing
 
 ## set_zcd1_sleep(bool enable)
 Description: 
 
-    Enables/disables the peripheral ZCD1.
+    Enables/disables the peripheral ZCD1 (Zero-Cross Detector 1, base address is 0x06C8).
 
 Arguments: 
 
