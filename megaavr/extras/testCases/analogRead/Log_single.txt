@@ -1,0 +1,81 @@
+-------------------------------------------------------------------------------------------------
+
+             10 bit Single-Ended test
+( 0.75 / 1.02 ) * 1024 = 749
+
+-------------------------------------------------------------------------------------------------
+
+prescalar Test
+Prescalar Value 2  --- (Expected, Result) -> (749, 0)
+Prescalar Value 4  --- (Expected, Result) -> (749, 914)
+Prescalar Value 8  --- (Expected, Result) -> (749, 911)
+Prescalar Value 12  --- (Expected, Result) -> (749, 915)
+Prescalar Value 16  --- (Expected, Result) -> (749, 915)
+Prescalar Value 20  --- (Expected, Result) -> (749, 906)
+Prescalar Value 24  --- (Expected, Result) -> (749, 915)
+Prescalar Value 28  --- (Expected, Result) -> (749, 916)
+Prescalar Value 32  --- (Expected, Result) -> (749, 909)
+Prescalar Value 48  --- (Expected, Result) -> (749, 912)
+Prescalar Value 64  --- (Expected, Result) -> (749, 914)
+Prescalar Value 96  --- (Expected, Result) -> (749, 915)
+Prescalar Value 128  --- (Expected, Result) -> (749, 912)
+Prescalar Value 256  --- (Expected, Result) -> (749, 911)
+-------------------------------------------------------------------------------------------------
+
+sampleDelay Test
+Sample Delay 1  --- (Expected, Result) -> (749, 895)
+Sample Delay 2  --- (Expected, Result) -> (749, 895)
+Sample Delay 3  --- (Expected, Result) -> (749, 895)
+Sample Delay 7  --- (Expected, Result) -> (749, 895)
+Sample Delay 15  --- (Expected, Result) -> (749, 895)
+Sample Delay 31  --- (Expected, Result) -> (749, 895)
+Sample Delay 63  --- (Expected, Result) -> (749, 895)
+Sample Delay 127  --- (Expected, Result) -> (749, 895)
+Sample Delay 255  --- (Expected, Result) -> (749, 895)
+Sample Delay 511  --- (Expected, Result) -> (749, 927)
+Sample Delay 1023  --- (Expected, Result) -> (749, 927)
+-------------------------------------------------------------------------------------------------
+
+sampleLen Test
+Sample Length 1  --- (Expected, Result) -> (749, 895)
+Sample Length 2  --- (Expected, Result) -> (749, 895)
+Sample Length 3  --- (Expected, Result) -> (749, 895)
+Sample Length 7  --- (Expected, Result) -> (749, 895)
+Sample Length 15  --- (Expected, Result) -> (749, 895)
+Sample Length 31  --- (Expected, Result) -> (749, 895)
+Sample Length 63  --- (Expected, Result) -> (749, 959)
+Sample Length 127  --- (Expected, Result) -> (749, 895)
+Sample Length 255  --- (Expected, Result) -> (749, 895)
+-------------------------------------------------------------------------------------------------
+
+sampleNum Test
+Sample Number 1  --- (Expected, Result) -> (749, 895)
+Sample Number 2  --- (Expected, Result) -> (1498, 1790)
+Sample Number 4  --- (Expected, Result) -> (2996, 3580)
+Sample Number 8  --- (Expected, Result) -> (5992, 7160)
+Sample Number 16  --- (Expected, Result) -> (11984, 14320)
+Sample Number 32  --- (Expected, Result) -> (23968, 28640)
+Sample Number 64  --- (Expected, Result) -> (-17600, -8256)
+Sample Number 128  --- (Expected, Result) -> (30336, -8256)
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 0         | 0           | 10          | 2           | 128         | 1           | 1           |
+-------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------
+
+             12 bit Single-Ended test
+( 0.75 / 1.02 ) * 4096 = 2999
+-------------------------------------------------------------------------------------------------
+
+sampleNum Test
+Sample Number 1  --- (Expected, Result) -> (2999, 3583)
+Sample Number 2  --- (Expected, Result) -> (5998, 7166)
+Sample Number 4  --- (Expected, Result) -> (11996, 14332)
+Sample Number 8  --- (Expected, Result) -> (23992, 28664)
+Sample Number 16  --- (Expected, Result) -> (-17552, -8208)
+Sample Number 32  --- (Expected, Result) -> (30432, -8208)
+Sample Number 64  --- (Expected, Result) -> (-4672, -5184)
+Sample Number 128  --- (Expected, Result) -> (-9344, -8209)
+| convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
+| 0         | 0           | 12          | 2           | 128         | 1           | 1           |
+-------------------------------------------------------------------------------------------------
