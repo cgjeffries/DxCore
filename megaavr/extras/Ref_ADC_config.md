@@ -1,12 +1,12 @@
 # ADC API Design
 The ADC API design in the DxCore library introduces new data structures and 
 functions for configuring and reading analog values from the ADC of a 
-microcontroller or similar device. The new data structure, ADCConfig, allows for 
+microcontroller or similar device. The new data structure, `ADCConfig`, allows for 
 easy configuration of various ADC parameters such as conversion mode, resolution, 
 prescaler, sample delay, sample length, and sample number. Additionally, new 
-functions such as analogRead(), analogReadConfig(), getAnalogReadConfig(), 
-analogReadSampleDelay(), analogReadEnableSingleEnded(), analogReadEnableDifferential(), 
-analogReadSampleNum(), and analogReadPrescaler() are introduced for reading and 
+functions such as `analogRead()`, `analogReadConfig()`, `getAnalogReadConfig()`, 
+`analogReadSampleDelay()`, `analogReadEnableSingleEnded()`, `analogReadEnableDifferential()`, 
+`analogReadSampleNum()`, and `analogReadPrescaler()` are introduced for reading and 
 configuring the ADC module.
 
 ## Data Structures
@@ -14,7 +14,7 @@ configuring the ADC module.
 Structure for containing all of the ADC configuration parameters:
 ```c
 typedef struct ADCConfig_struct {
-    uint8_t convMode;    // ADC conversion mode (single-ended/differential)
+	uint8_t convMode;    // ADC conversion mode (single-ended/differential)
 	uint8_t muxNeg;      // Negative pin for differential ADC conversion
 	uint8_t resolution;  // ADC bit resolution
 	uint8_t prescaler;   // ADC clock prescaler value
@@ -27,13 +27,13 @@ typedef struct ADCConfig_struct {
 A default instance of the struct that can be copied to get default config values:
 ```c
 const ADCConfig ADCConfig_default = {
-    .convMode = 0,
-    .muxNeg = 0x16,
-    .resolution = 10,
-    .prescaler = ADC_DEFAULT_PRESCALER,
-    .sampleNum = 0,
-    .sampleDelay = 0,
-    .sampleLen = 14
+	.convMode = 0,
+	.muxNeg = 0x16,
+	.resolution = 10,
+	.prescaler = ADC_DEFAULT_PRESCALER,
+	.sampleNum = 0,
+	.sampleDelay = 0,
+	.sampleLen = 14
 };
 ```
 
@@ -92,14 +92,14 @@ a higher bit resolution and at high accumulation values results in the
 least-significant bits being dropped.
 
 Valid values for `samples`:
-- 0x0: no accumulation (`ADC_SAMPNUM_NONE_gc`)
-- 0x1: 2 samples (`ADC_SAMPNUM_ACC2_gc`)
-- 0x2: 4 samples (`ADC_SAMPNUM_ACC4_gc`)
-- 0x3: 8 samples (`ADC_SAMPNUM_ACC8_gc`)
-- 0x4: 16 samples (`ADC_SAMPNUM_ACC16_gc`)
-- 0x5: 32 samples (`ADC_SAMPNUM_ACC32_gc`)
-- 0x6: 64 samples (`ADC_SAMPNUM_ACC64_gc`)
-- 0x7: 128 samples (`ADC_SAMPNUM_ACC128_gc`)
+- 0: no accumulation
+- 2: 2 samples
+- 4: 4 samples
+- 8: 8 samples
+- 16: 16 samples
+- 32: 32 samples
+- 64: 64 samples
+- 128: 128 samples
 
 Relevant register: `ADC0.CTRLB:SAMPNUM`: 
 
@@ -109,19 +109,19 @@ clock frequency of the ADC module, and by setting a valid prescaler value, the
 user can adjust the speed and accuracy of the ADC conversion to meet their needs.
 
 Valid values for `prescaler`:
-- 0x0: clock divided by 2 (`ADC_PRESC_DIV2_gc`)
-- 0x1: clock divided by 4 (`ADC_PRESC_DIV4_gc`)
-- 0x2: clock divided by 8 (`ADC_PRESC_DIV8_gc`)
-- 0x3: clock divided by 12 (`ADC_PRESC_DIV12_gc`)
-- 0x4: clock divided by 16 (`ADC_PRESC_DIV16_gc`)
-- 0x5: clock divided by 20 (`ADC_PRESC_DIV20_gc`)
-- 0x6: clock divided by 24 (`ADC_PRESC_DIV24_gc`)
-- 0x7: clock divided by 28 (`ADC_PRESC_DIV28_gc`)
-- 0x8: clock divided by 32 (`ADC_PRESC_DIV32_gc`)
-- 0x9: clock divided by 48 (`ADC_PRESC_DIV48_gc`)
-- 0xA: clock divided by 64 (`ADC_PRESC_DIV64_gc`)
-- 0xB: clock divided by 96 (`ADC_PRESC_DIV96_gc`)
-- 0xC: clock divided by 128 (`ADC_PRESC_DIV128_gc`)
-- 0xD: clock divided by 256 (`ADC_PRESC_DIV256_gc`)
+- 2: clock divided by 2 
+- 4:  clock divided by 4 
+- 8: clock divided by 8 
+- 12: clock divided by 12 
+- 16: clock divided by 16 
+- 20: clock divided by 20 
+- 24: clock divided by 24 
+- 28: clock divided by 28 
+- 32: clock divided by 32 
+- 48: clock divided by 48 
+- 64: clock divided by 64 
+- 96: clock divided by 96 
+- 128: clock divided by 128
+- 256: clock divided by 256
 
 Relevant register: `ADC0.CTRLC:PRESC`
