@@ -6,6 +6,7 @@ https://github.com/jnbrauer/SER401-2022-Group39-Documentation/blob/MALS-70-low-p
 #ifndef LOW_POWER_H
 #define LOW_POWER_H
 
+#ifdef __cplusplus
 //////////////////////////////////////////////////////////////
 //                  General Sleep API                       //
 //////////////////////////////////////////////////////////////
@@ -117,14 +118,20 @@ brown-out scenario.
 */
 void bodSetDisabled();
 
-
+#endif
 //////////////////////////////////////////////////////////////
 //                      RTC Utilities                       //
 //////////////////////////////////////////////////////////////
+#ifdef __cplusplus
+extern "C" {
+#endif
 typedef void (*voidFuncPtr)(void);
 
 void attachRTCCNTInterrupt(voidFuncPtr func);
 
 void detachRTCCNTInterrupt();
+#ifdef __cplusplus
+}
+#endif
 
 #endif

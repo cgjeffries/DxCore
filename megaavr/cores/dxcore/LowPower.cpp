@@ -106,10 +106,11 @@ void detachRTCCNTInterrupt(){
 
 ISR(RTC_CNT_vect)
 {
-  if(RTCCNTIntHandler != nullptr){
+  if(RTCCNTIntHandler != nullptr) {
     RTCCNTIntHandler();
   }
-  RTC.INTFLAGS = RTC_OVF_bm;          /* Clear interrupt flag by writing '1' (required) */
+  RTC.INTFLAGS = RTC_CMP_bm | RTC_OVF_bm;        /* Clear interrupt flags by writing '1' to each (required) */
+
 }
 
 //disable the RTC, that way it won't keep generating interrupts

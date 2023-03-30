@@ -30,7 +30,6 @@
   #include "HardwareI2C.h"
   #include "HardwareSerial.h"
   #include "IPAddress.h"
-  #include "LowPower.h"
   #include "Print.h"
   #include "Printable.h"
   #include "PluggableUSB.h"
@@ -41,6 +40,8 @@
   #include "USBAPI.h"
   #include "WCharacter.h"
 #endif
+
+#include "LowPower.h"
 
 /* Standard C library includes */
 #include <stdlib.h>
