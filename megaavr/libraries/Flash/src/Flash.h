@@ -27,7 +27,7 @@ class FlashClass {
     void* mappedPointer(const uint32_t address);
     uint8_t* mappedPointerByte(const uint32_t address) {
       // juat syntactic
-      return (uint16_t*) mappedPointer(address);
+      return (uint8_t*) mappedPointer(address);
     }
     uint16_t* mappedPointerWord(const uint32_t address);
       // juat syntactic
@@ -38,12 +38,14 @@ class FlashClass {
 
 extern FlashClass Flash;
 
+#define NO_CORE_RESERVED
+
 typedef enum FlashLockZones {
   LOCK_FLASH_MAP               = (0x80),
   LOCK_APPCODE                 = (0x01),
   LOCK_BOOTREAD                = (0x02),
   LOCK_APPDATA                 = (0x04)
-} FLASH_LOCK_TYPE_t
+} FLASH_LOCK_TYPE_t;
 
 typedef enum FLASHWRITE_RETURN_VALUES {
   FLASHWRITE_OK                = (0x00),
@@ -163,10 +165,10 @@ typedef enum FLASHWRITE_RETURN_VALUES {
   * anything, but it is very possible that
   * that will change
   */
-  FLASHWRITE_BOOT_SECT         = (0x49)
+  FLASHWRITE_BOOT_SECT         = (0x49),
  /* Even the bootoader can't rewrite to
   * BOOTCODE section of flash.
-  /* 0x80 - NVMCTRL complained        */
+  * 0x80 - NVMCTRL complained        */
   FLASHWRITE_FAIL              = (0x80),
   // Test & FLASHWRITE_FAIL to test
   // if the NVMCTRL gave an error.

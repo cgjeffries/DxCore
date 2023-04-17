@@ -1,4 +1,4 @@
-/*  (C) Spence Konde 2021 open source (LGPL2.1 see LICENSE.md) based on exisisting Arduino cores.*/
+/*  (C) Spence Konde 2021 open source (LGPL2.1 see LICENSE.md) based on existing Arduino cores.*/
 //                                                                                    *INDENT-OFF*
 /*
  ###  #     # ####      ####   ###      # ####  ####      ###   ##
@@ -105,7 +105,7 @@ Include guard and include basic libraries. We are normally including this inside
 #define analogChannelToDigitalPin(p)      ((p) < 8 ? ((p) + PIN_PD0) : (((p) > 15 && (p) < 22) ? ((p) - 16 + PIN_PF0) : NOT_A_PIN))
 #define analogInputToDigitalPin(p)                        analogChannelToDigitalPin((p) & 0x7F)
 #define digitalOrAnalogPinToDigital(p)    (((p) & 0x80) ? analogChannelToDigitalPin((p) & 0x7f) : (((p)<=NUM_DIGITAL_PINS) ? (p) : NOT_A_PIN))
-#define portToPinZero(port)               ((port) == 0 ? 0 : ((port)== 2 ? 8 : ((port)== 3 ? 12 : ((port)== 5 ? 20 : NOT_A_PIN))))
+#define portToPinZero(port)               ((port) == PA ? PIN_PA0 : ((port)== PC ? PIN_PC0 : ((port)== PD ? PIN_PD0 : ((port)== PF ? PIN_PF0 : NOT_A_PIN))))
 
 // PWM pins
 
@@ -124,7 +124,7 @@ Include guard and include basic libraries. We are normally including this inside
 #define TCB0_PINS 0x00                  // TCB0 output on PA2 instead of PF4
 #define TCB1_PINS 0x00                  // TCB1 output on PA3 instead of PF5
 #define TCB2_PINS 0x00                  // TCB2 output on PC0 instead of PB4
-#define TCD0_PINS 0x00                  // TCD0 output on PA4~PA7
+#define TCD0_PINS PORTMUX_TCD0_PORTA    // TCD0 output on PA4~PA7
 
 #define PIN_TCA0_WO0_INIT PIN_PD0
 #define PIN_TCB0_WO_INIT  PIN_PA2
@@ -416,5 +416,11 @@ const uint8_t digital_pin_to_timer[] = {
   NOT_ON_TIMER, // 26 PF6 RESET
   //NOT_ON_TIMER// 27 PF7 UPDI
   };
-#endif
+#endif  // These are used for CI testing. They should *not* *ever* be used except for CI-testing where we need to pick a viable pin to compile a sketch with that won't generate compile errors (we don't care whether it would;d actually work, we are concerned with )
+  #if CLOCK_SOURCE != 0
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 2)
+  #else
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 0 ): NOT_A_PIN)
+  #endif
+  #define    _VALID_ANALOG_PIN(pin)  ((pin) >= 0 && ((pin) <= 4) ?                     ((pin) + PIN_PD4) : NOT_A_PIN)
 #endif

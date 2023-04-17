@@ -26,36 +26,71 @@
 #if defined(SPI_MUX)
   #define SPI0_SWAP_DEFAULT  0x00
   #define SPI0_SWAP0 SPI0_SWAP_DEFAULT
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI_MUX
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_1)
   #define SPI0_SWAP_ALT1     0x01
   #define SPI0_SWAP1 SPI0_SWAP_ALT1
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT1
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_1
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_1
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_2)
   #define SPI0_SWAP_ALT2     0x02
   #define SPI0_SWAP2 SPI0_SWAP_ALT2
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT2
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_2
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_2
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_3)
   #define SPI0_SWAP_ALT3     0x03
   #define SPI0_SWAP3 SPI0_SWAP_ALT3
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT3
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_3
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_3
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_4)
   #define SPI0_SWAP_ALT4     0x04
   #define SPI0_SWAP4 SPI0_SWAP_ALT4
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT4
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_4
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_4
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_5)
   #define SPI0_SWAP_ALT5     0x05
   #define SPI0_SWAP5 SPI0_SWAP_ALT5
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT5
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_5
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_5
+  #endif
 #endif
 
 #if defined(SPI_MUX_PINSWAP_6)
   #define SPI0_SWAP_ALT6     0x06
   #define SPI0_SWAP6 SPI0_SWAP_ALT6
+  #if !defined(DEFAULT_SPI_MUX)
+    #define DEFAULT_SPI_MUX SPI0_SWAP_ALT6
+    #define DEFAULT_SPI_MOSI PIN_SPI_MOSI_PINSWAP_6
+    #define DEFAULT_SPI_SCK PIN_SPI_SCK_PINSWAP_6
+  #endif
 #endif
 
 
@@ -192,10 +227,10 @@ class SPISettings {
 
       uint32_t clockSetting = 0;
 
-      clockSetting = F_CPU / 2;
+      clockSetting = F_CPU >> 1;
       clockDiv = 0;
       while ((clockDiv < 6) && (clock < clockSetting)) {
-        clockSetting /= 2;
+        clockSetting >>= 1;
         clockDiv++;
       }
 
@@ -214,23 +249,22 @@ class SPISettings {
       /* they have had SSD added to the modebits. That permits the SPI   */
       /* library to coeexist with code that uses the SPI as a slave,     */
       /* if and only if the SPI_MODEn named constants are used           */
-      ctrlb = (dataMode);
-      //      | (SPI_SSD_bm)
+      ctrlb = (dataMode) | (SPI_SSD_bm);
       //      | (0 << SPI_BUFWR_bp)
       //      | (0 << SPI_BUFEN_bp);
 
       /* Get Clock related values.*/
-      uint8_t clockDiv_mult = (clockDiv & 0x1);
-      uint8_t clockDiv_pres = (clockDiv >> 1);
+      //uint8_t clockDiv_mult = (clockDiv & 0x1);
+      //uint8_t clockDiv_pres = (clockDiv >> 1);
 
       /* Pack into the SPISettings::ctrlb class     */
       /* Set Prescaler, x2, SPI to Master, and Bit Order. */
 
-      ctrla = (clockDiv_pres << SPI_PRESC_gp)         |
-              (clockDiv_mult << SPI_CLK2X_bp)         |
+      ctrla = (clockDiv & 1 ? SPI_CLK2X_bm : 0)       |
+              (clockDiv & 6)                          |
               (SPI_ENABLE_bm)                         |
               (SPI_MASTER_bm)                         |
-              ((bitOrder == LSBFIRST) << SPI_DORD_bp);
+              ((bitOrder == LSBFIRST) ? SPI_DORD_bm : 0);
 
     }
     /* member variables containing the desired SPI settings */
@@ -287,8 +321,7 @@ class SPIClass {
     uint8_t _uc_pinMOSI = PIN_SPI_MOSI;
     uint8_t _uc_pinSCK = PIN_SPI_SCK;
     uint8_t _uc_pinSS;
-    uint8_t _uc_mux = SPI_MUX;
-
+    uint8_t _uc_mux = DEFAULT_SPI_MUX;
     bool initialized;
     uint8_t interruptMode;
     #ifdef CORE_ATTACH_OLD

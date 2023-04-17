@@ -1,10 +1,18 @@
 /*
 ADC0.SAMPCTRL demo
 
-Connect a 1 MEG resistor between PD1 and PD0.
+Connect a 1 MEG resistor between the two analog inputs. This sketch, because it is used as a "compile test" to approve new
+versions, has to choose pins that always exist on parts being tested. These pins turn out to be PD4-7, and we use the first two.
+| Part family   | FIRST_PIN | SECOND_PIN |
+|---------------|-----------|------------|
+| AVR DA+DB>48p | PIN_PD4   | PIN_PD5    |
+| AVR DB/DD     | PIN_PD4   | PIN_PD5    |
+| AVR DD <28pin | PIN_PD4   | PIN_PD5    |
+| AVR EA        | PIN_PD4   | PIN_PD5    |
 
-This makes PD0 a very high impedance input, controlled by PD1.
-This sketch flips PD1 and then immediately takes some readings on PD0, printing the first one.
+
+This makes PD4 a very high impedance input, controlled by PD5.
+This sketch flips PD5 and then immediately takes some readings on PD4, printing the first one.
 Format output is conducive to graphing in excel/etc (save as .csv)
 One thing that is important to remember is that what matters is what the last voltage READ BY the ADC was.
 For example, if you switch back and forth between reading a high impedance source, and a voltage very close to ground,
@@ -17,38 +25,34 @@ rather odd. Also that it goes all the way to 0 on a LOW, but not all the way to 
 
 
 */
+#define FIRST_PIN PIN_PD4
+#define SECOND_PIN PIN_PD5
 
 void setup() {
-  pinMode(PIN_PD1, OUTPUT);
-  digitalWrite(PIN_PD1, 0);
+  pinMode(SECOND_PIN, OUTPUT);
+  digitalWrite(SECOND_PIN, LOW);
   ADC0.SAMPCTRL = 0xFF;
   analogReadResolution(12);
-  Serial.begin(1000000);
+  Serial.begin(115200);
   delay(1000);
-  analogRead(PIN_PD0);
+  analogRead(FIRST_PIN);
 }
 
 void loop() {
   ADC0.SAMPCTRL++;
-  digitalWrite(PIN_PD1, 1);
-  Serial.print(analogRead(PIN_PD0));
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  Serial.print(",");
-  digitalWrite(PIN_PD1, 0);
-  Serial.println(analogRead(PIN_PD0));
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
-  analogRead(PIN_PD0);
+  Serial.print("Sampctrl=");
+  Serial.println(ADC0.SAMPCTRL);
+  Serial.flush();
+  digitalWrite(SECOND_PIN, 1);
+  Serial.print(analogRead(FIRST_PIN));
+  Serial.print(' ');
+  Serial.println(analogRead(FIRST_PIN));
+  Serial.flush();
+  digitalWrite(SECOND_PIN, 0);
+  Serial.print(analogRead(FIRST_PIN));
+  Serial.print(' ');
+  Serial.println(analogRead(FIRST_PIN));
+  Serial.flush();
   if (ADC0.SAMPCTRL == 255) {
     while (1);
   }

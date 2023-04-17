@@ -15,7 +15,7 @@
  * Modified 28 September 2010 by Mark Sproul
  * Modified 14 August 2012 by Alarus
  * Modified 3 December 2013 by Matthijs Kooijman
- * Modified by SOMEONE around 2016-2017; hardware seriel didn't port itself to the megaAVR 0-series.
+ * Modified by SOMEONE around 2016-2017; hardware serial didn't port itself to the megaAVR 0-series.
  * Modified 2017-2021 by Spence Konde for megaTinyCore and DxCore.
  * Modified late 2021 by Spence Konde and MX682X for DxCore
  * 12/26/21: Correct bug introduced in my ASM macros. -Spence
@@ -28,11 +28,14 @@
 */
 
 #pragma once
-
+#include "core_devices.h"
 #include <inttypes.h>
-#include "Stream.h"
+#include "api/Stream.h"
 #include "pins_arduino.h"
+#include "UART_constants.h"
 #include "UART_swap.h"
+
+// No UART_swap.h on megaTinyCore - there isn't enough to put in separate file.
 
 /* Define constants and variables for buffering incoming serial data.  We're
  * using a ring buffer, in which head is the index of the location to which
@@ -40,11 +43,11 @@
  * location from which to read.
  * NOTE: a "power of 2" buffer size is **REQUIRED** - the compiler
  * was missing optimizations, and there's no particular reason to have
- * a weird sized buffer, and several reasons not to. 
- 
-/* More than 256b buffers imposes a considerable performance penalty,
- * - one large enough to obliviate the entire purpose, because of the 
- * need to make the access to the current index atomic. This atomic 
+ * a weird sized buffer, and several reasons not to.
+ *
+ * More than 256b buffers imposes a considerable performance penalty,
+ * - one large enough to obliviate the entire purpose, because of the
+ * need to make the access to the current index atomic. This atomic
  * block is costly - it's a macro for cli and sei
  * implemented in inline assembly, which sounds fast. But the optimizer
  * can reorder instructions *and isn't smart enough not to here* without the
@@ -80,8 +83,10 @@
  * The sole exception? The ATmega2560/2561 has only 8k RAM, a 32:1 flash to ram ratio.
  * (to be fair, you are allowed to use external RAM - which was a very rare feature indeed,
  */
+#if !defined(LTODISABLED)
 #if !defined(USE_ASM_TXC)
-  #define USE_ASM_TXC 1    // This *appears* to work? It's the easy one. saves 6b for 1 USART and 44b for each additional one
+  #define USE_ASM_TXC 2    // A bit slower than 1 in exchange for halfduplex.
+//#define USE_ASM_TXC 1    // This *appears* to work? It's the easy one. saves 6b for 1 USART and 44b for each additional one
 #endif
 
 #if !defined(USE_ASM_RXC)
@@ -91,6 +96,22 @@
 #if !defined(USE_ASM_DRE)
   #define USE_ASM_DRE 1      // This is the hard one...Depends on BOTH buffers, and has that other method of calling it. saves 34b for 1 USART and 68b for each additional one
 #endif
+#else
+  #warning "LTO has been disabled! ASM TXC/RXC/DRE not available. USART falling back to the old, flash-inefficient implementation with fewer features."
+  #if defined(USE_ASM_TXC)
+    #undef USE_ASM_TXC
+  #endif
+
+  #if defined(USE_ASM_RXC)
+    #undef USE_ASM_RXC
+  #endif
+
+  #if defined(USE_ASM_DRE)
+    #undef USE_ASM_DRE
+  #endif
+#endif
+
+
 // savings:
 // 44 total for 0/1,
 // 301 for 2-series, which may be nearly 9% of the total flash!
@@ -173,7 +194,7 @@
   }})
 
 
-class HardwareSerial : public HardwareSerial {
+class HardwareSerial : public Stream {
 /* DANGER DANGER DANGER
  * CHANGING THE MEMBER VARIABLES BETWEEN HERE AND THE OTHER SCARY COMMENT WILL COMPLETELY BREAK SERIAL
  * WHEN USE_ASM_DRE or USE_ASM_RXC is used!
@@ -183,7 +204,7 @@ class HardwareSerial : public HardwareSerial {
     uint8_t * _usart_pins;   // pointer to the pin set, in PROGMEM
     uint8_t _mux_count;     // maximum MUX
     uint8_t _pin_set;       // the active pin set for setting the correct pins for I/O
-    uint8_t _state = 0; // LSB = _written. Second bit = half duplex (LBME) and special handling needed.
+    volatile uint8_t _state = 0; // LSB = _written. Second bit = half duplex (LBME) and special handling needed.
     volatile rx_buffer_index_t _rx_buffer_head;
     volatile rx_buffer_index_t _rx_buffer_tail;
     volatile tx_buffer_index_t _tx_buffer_head;
@@ -198,7 +219,7 @@ class HardwareSerial : public HardwareSerial {
 /* DANGER DANGER DANGER */
 
   public:
-    inline             HardwareSerial(volatile USART_t *hwserial_module, uint8_t module_number, uint8_t default_pinset);
+    inline             HardwareSerial(volatile USART_t *hwserial_module, uint8_t *usart_pins, uint8_t mux_count, uint8_t mux_default);
     bool                    pins(uint8_t tx, uint8_t rx);
     bool                    swap(uint8_t mux_level = 1);
     void                   begin(uint32_t baud) {begin(baud, SERIAL_8N1);}
@@ -224,6 +245,7 @@ class HardwareSerial : public HardwareSerial {
     uint16_t *            printHex(         uint16_t* p, uint8_t len, char sep = 0, bool s = 0);
     volatile uint8_t *    printHex(volatile  uint8_t* p, uint8_t len, char sep = 0            );
     volatile uint16_t *   printHex(volatile uint16_t* p, uint8_t len, char sep = 0, bool s = 0);
+
     uint8_t *           printHexln(          uint8_t* p, uint8_t len, char sep = 0            ) {
       uint8_t* ret;
       ret=printHex(p, len, sep);
@@ -238,6 +260,7 @@ class HardwareSerial : public HardwareSerial {
       println();
       return ret;
     }
+
     volatile uint16_t * printHexln(volatile uint16_t* p, uint8_t len, char sep = 0, bool s = 0) {
         volatile uint16_t* ret;
         ret=printHex(p, len, sep, s);
@@ -299,16 +322,28 @@ class HardwareSerial : public HardwareSerial {
     static void         _mux_set(uint8_t* pinInfo, uint8_t mux_count, uint8_t mux_code                    );
     static uint8_t _pins_to_swap(uint8_t* pinInfo, uint8_t mux_count, uint8_t tx_pin,       uint8_t rx_pin);
     static uint8_t       _getPin(uint8_t* pinInfo, uint8_t mux_count, uint8_t mux_setting,  uint8_t pin);
-    /* Return value is:
-     * 0bRT
-     * R = RX_ENABLED
-     * T = TX_ENABLED
+   /* _statuscheck() - the static side to getStatus(). Static methods have no concept of which instance they are called from. This gives the optimizer more handholds
+     * As you probably know, the optimizer's hands are pretty tightly bound when working with a normal class method, but it has a much freer hand in static methods.
+     * Return value is:
+     * 0HRaaFPHW
+     * H = Hardware RX buffer overflowed because interrupts were disabled for too long while trying to receive data.
+     * R = Ring buffer suffered an overflow. When you check Serial.available, use a while loop to read in characters until nothing is left in the ring buffer.
+     * aa = Autobaud state:
+     * 00 = Disabled
+     * 01 = SERIAL_AUTOBAUD_ENABLED
+     * 10 = SERIAL_AUTOBAUD_SYNC
+     * 11 = SERIAL_AUTOBAUD_BADSYNC - This is Bad News, bro. Baaaaaad news. You tried to do autobaud, but got something that wasn't a sync, and some parts have an errata
+     *      that results in the receiver disabling itself until you clear this, turn off RXEN, and turn it back on. This ugly kludge is implemented by getStatus, which calls
+     *      this function. Currently only DD parts have this erratum, but I won't trust that until I've seen more recent errata that don't list it (my prediction is anything
+     *      with the SFDEN bug has the ISFIF one too, which would be most or all modern AVRs)
+     * F = SERIAL_FRAME_ERROR - A framing error has occurred since you last called this, indicating mismatched baud settings. See Serial Reference.
+     * P = SERIAL_PARITY_ERROR - A parity error has occurred since you last called this, and the bad character did not make it to the application.
+     *     When using parity mode, but mismatched baud settings, you will get a mixture of gibberish + framing error set, and
+     *     parity errors.
+     * H = SERIAL_HALF_DUPLEX_ENABLED - indicates that half duplex mode is enabled.
      *
-     *
-     *
-     *
-     *
-     *
+     * Test for these errors like st = Serial.getStatus(); if (st & SERIAL_FRAME_ERROR) { ... }
+     * For the autobaud ones with 2 bits: if (st & SERIAL_AUTOBAUD_BADSYNC) { // If it wasn't fixed by the core, you'd have to take action. But it is}
      */
     static uint8_t _statuscheck(uint8_t ctrlb, uint8_t status, uint8_t state) {
       uint8_t ret = state;
@@ -347,4 +382,4 @@ class HardwareSerial : public HardwareSerial {
   extern HardwareSerial Serial5;
 #endif
 
-// Why was there ever a class called UpdiClass? It was UartClass... 
+// Why was there ever a class called UpdiClass? It was UartClass...

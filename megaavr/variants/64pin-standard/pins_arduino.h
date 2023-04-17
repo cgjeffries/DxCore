@@ -1,4 +1,4 @@
-/*  (C) Spence Konde 2021 open source (LGPL2.1 see LICENSE.md) based on exisisting Arduino cores.*/
+/*  (C) Spence Konde 2021 open source (LGPL2.1 see LICENSE.md) based on existing Arduino cores.*/
 //                                                                                    *INDENT-OFF*
 /*
  ###  #     # ####      ####   ###      # ####  ####        #   #  #
@@ -151,7 +151,7 @@ Include guard and include basic libraries. We are normally including this inside
 #define TCB2_PINS 0x00                      // TCB2 output on PC0 (default) instead of PB4.
 #define TCB3_PINS PORTMUX_TCB3_bm           // TCB3 output on PC1 instead of PB5 (default)
 #define TCB4_PINS 0x00                      // TCB4 output on PG3 (default) instead of PC6
-#define TCD0_PINS 0                         // TCD0 output on PA[4:7] (default - only default port option works on DA, DB parts.
+#define TCD0_PINS PORTMUX_TCD0_PORTA        // TCD0 output on PA[4:7] (default - only default port option works on DA, DB parts.
 // Note that we need to use the numerical value, not the _gc constant here. Group codes (_gc) are defined as enumerated types,
 // which are not understood by the preprocessor and can't be tested for by preprocessor conditionals.
 // Setting TCB2 and TCB3 for PWM on PC0, PC1 doesn't sound optimal for the AVR DB, but you shouldn't be using TCBs for PWM anyway!
@@ -168,7 +168,7 @@ Include guard and include basic libraries. We are normally including this inside
 //#define USE_TIMERD0_PWM is automatically set unless defined as 0 or 1; it will be enabled UNLESS TIMERD0_CLOCK_SETTING is and neither TIMERD0_TOP_SETTING nor F_TCD is.
 #define NO_GLITCH_TIMERD0
 
-#define digitalPinHasPWM(p)               (digitalPinHasPWMTCB(p) || ((p) >= PIN_PA4 && (p) <= PIN_PC5 && (p) != PIN_PB6 && (p) != PIN_PB6))
+#define digitalPinHasPWM(p)               (digitalPinHasPWMTCB(p) || ((p) >= PIN_PA4 && (p) <= PIN_PC5 && (p) != PIN_PB6 && (p) != PIN_PB7))
 
 
         /*##   ###  ####  ##### #   # #   # #   #
@@ -189,10 +189,12 @@ Include guard and include basic libraries. We are normally including this inside
 #define PIN_SPI_MISO           PIN_PA5
 #define PIN_SPI_SCK            PIN_PA6
 #define PIN_SPI_SS             PIN_PA7
+
 #define PIN_SPI_MOSI_PINSWAP_1 PIN_PE0
 #define PIN_SPI_MISO_PINSWAP_1 PIN_PE1
 #define PIN_SPI_SCK_PINSWAP_1  PIN_PE2
 #define PIN_SPI_SS_PINSWAP_1   PIN_PE3
+
 #define PIN_SPI_MOSI_PINSWAP_2 PIN_PG4
 #define PIN_SPI_MISO_PINSWAP_2 PIN_PG5
 #define PIN_SPI_SCK_PINSWAP_2  PIN_PG6
@@ -207,10 +209,12 @@ Include guard and include basic libraries. We are normally including this inside
 #define PIN_SPI1_MISO           PIN_PC1
 #define PIN_SPI1_SCK            PIN_PC2
 #define PIN_SPI1_SS             PIN_PC3
+
 #define PIN_SPI1_MOSI_PINSWAP_1 PIN_PC4
 #define PIN_SPI1_MISO_PINSWAP_1 PIN_PC5
 #define PIN_SPI1_SCK_PINSWAP_1  PIN_PC6
 #define PIN_SPI1_SS_PINSWAP_1   PIN_PC7
+
 #define PIN_SPI1_MOSI_PINSWAP_2 PIN_PB4
 #define PIN_SPI1_MISO_PINSWAP_2 PIN_PB5
 #define PIN_SPI1_SCK_PINSWAP_2  PIN_PB6
@@ -646,5 +650,11 @@ const uint8_t digital_pin_to_timer[] = {
   //NOT_ON_TIMER, //55 PF7 (UPDI)
 };
 #endif
-
+  // These are used for CI testing. They should *not* *ever* be used except for CI-testing where we need to pick a viable pin to compile a sketch with that won't generate compile errors (we don't care whether it would;d actually work, we are concerned with )
+  #if CLOCK_SOURCE != 0
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 2)
+  #else
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 0 ): NOT_A_PIN)
+  #endif
+  #define    _VALID_ANALOG_PIN(pin)  ((pin) >= 0 && ((pin) <= 4) ?                     ((pin) + PIN_PD1) : NOT_A_PIN)
 #endif

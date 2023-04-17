@@ -1,61 +1,67 @@
 /***********************************************************************|
-| megaAVR Configurable Custom Logic library                             |
-|                                                                       |
-| Oscillate.ino                                                         |
-|                                                                       |
-| A library for interfacing with the megaAVR Configurable Custom Logic. |
-| Developed in 2019 by MCUdude. https://github.com/MCUdude/             |
-| Example by Spence Konde, 2020 https://github.com/SpenceKonde/         |
-|                                                                       |
-| In this example, we demonstrate the fact that these are ASYNCHRONOUS  |
-| by (ab)using the CCL in a configuration which will oscillate - this   |
-| example uses two logic blocks - though you can even just use a singke |
-| one with it's first input set to 'feedback` and its truth table to 1  |
-| (HIGH if all inputs LOW), with the other two inputs masked.           |
-| If you set values for the filter, you  get sane output frequencies    |
-| which might even be useful (that is, it acts as a clock divider).     |
-| But what fun is that?! If you turn them both off, it oscillates much  |
-| faster - most parts generate something in the area of 30-40 MHz with  |
-| the below sketch, and around 100 just inverting their own output.     |
-|                                                                       |
-| It is temperature dependent - point a can of freeze spray (computer   |
-| duster held upside-down, so the liquid comes out) and the frequency   |
-| goes up. Aim a heat-gun or torch at it (use care - freeze spray DOES  |
-| burn, and you do NOT want to inhale the combustion products or cause  |
-| an inferno in your lab) and the frequency goes down. Warnings:        |
-| Hitting hot parts with freeze spray may crack the package, ruining the|
-| part, and freeze spray will cause frost to form on the parts. Best to |
-| disconnect them from power while they thaw and dry off before applying|
-| power to them again. PCBs also burn if you are not careful with that  |
-| torch) This maximum-speed oscillation is of essentially zero          |
-| practical use, but it sure is cool isn't it?                          |
-|                                                                       |
-| Maybe it could be used to examine a new silicon revision to see if    |
-| there were any significant process changes? *shrug*                   |
-|                                                                       |
-| And yes, if you happen to want your part to run at an indeterminate   |
-| and highly temperature dependent speed, you could then set the system |
-| clock prescaler to an appropriate prescaler, and connect a jumper     |
-| between the Logic0 output pin and EXTCLK pin, and switch to the       |
-| external clock, and it will run from that. This is not recommended    |
-| except as a joke or demo. But if you ever find yourself missing the   |
-| crap oscillator that the classic AVRs had....                         |
-|                                                                       |
-| In combination with the synchronizer/filter, though, it is has the    |
-| potential to be far more useful - as it will allow generation of a    |
-| prescaled  clock. On parts where a TCB can be clocked from an event,  |
-| this allows one to work around the limited prescaling options         |
-| available for TCBs, without having to change the TCA prescaler. For   |
-| more information on this, see: https://github.com/SpenceKonde/        |
-| AVR-Guidance/blob/master/CCL_EVSYS_hacks/CCL_prescaling.md            |
-|                                                                       |
-************************************************************************/
+  | megaAVR Configurable Custom Logic library                             |
+  |                                                                       |
+  | Oscillate.ino                                                         |
+  |                                                                       |
+  | A library for interfacing with the megaAVR Configurable Custom Logic. |
+  | Developed in 2019 by MCUdude. https://github.com/MCUdude/             |
+  | Example by Spence Konde, 2020 https://github.com/SpenceKonde/         |
+  |                                                                       |
+  | In this example, we demonstrate the fact that these are ASYNCHRONOUS  |
+  | by (ab)using the CCL in a configuration which will oscillate - this   |
+  | example uses two logic blocks - though there are plenty of ways to    |
+  | make it oscillate with a single one (see if you can come up with some |
+  | - assuming you find this fun). If you set values for the filter, you  |
+  | get sane output frequencies - just what one would expect from the     |
+  | datasheet. But what fun is that?! If you turn them both off, it       |
+  | oscillates much faster - faster than the clock speed! with a sawtooth |
+  | waveform which (measured by my 'scope) clocks in at 37 MHz - from a   |
+  | part running at 20 MHz! Different configurations will result in       |
+  | different frequencies. The simplest one can oscillate at a whopping   |
+  | 92 MHz!                                                               |
+  |                                                                       |
+  | It is temperature dependenr - point a can of freeze spray (computer   |
+  | duster held upside-down, so the liquid comes out) and the frequency   |
+  | goes up. Aim a heat-gun or torch at it (use care - freeze spray DOES  |
+  | burn, and you do NOT want to inhale the combustion products or cause  |
+  | an inferno in your lab.) and the frequency goes down. Warnings:       |
+  | Hitting hot parts with freeze spray may crack the package, ruining the|
+  | part, and freeze spray will cause frost to form on the parts. Best to |
+  | disconnect them from power while they thaw and dry off before applying|
+  | power to them again. PCBs also burn if you are not careful with that  |
+  | torch. Freeze spray, despite the statements some carry to the contrary|
+  | absolutely is flammable, and the combustion products aren't pleasant. |
+  | Freeze-sprays contain highly potent greenhouse gasses. For these      |
+  | reasons I do not recommend attempting to duplicate that part of the   |
+  | test. This is maximum-speed oscillation is of essentially zero        |
+  | practical use, but it sure is cool isn't it?                          |
+  |                                                                       |
+  | Maybe it could be used to examine a new silicon revision to see if    |
+  | there were any significant process changes? *shrug*                   |
+  |                                                                       |
+  | And yes, if you happen to want your part to run at an indeterminate   |
+  | and highly temperature dependent speed, you could then set the system |
+  | clock prescaler to 2, connect a jumper between the Logic0 output pin  |
+  | and EXTCLK pin, and switch to the external clock, leading to it       |
+  | running at around 18.5 MHz with wide variation depending on conditions|
+  | This is not recommended except as a silly joke, and it is thoroughly  |
+  | useless. Maybe if you miss the +/- 10% tolerance on the classic AVR   |
+  | internal oscillator?                                                  |
+  |                                                                       |
+  | In combination with the synchronizer/filter, though, it is has the    |
+  | potential to be far more useful - as it will allow generation of a    |
+  | prescaled system clock. On parts where a TCB can be clocked from an   |
+  | event, this allows one to work around the limited prescale options    |
+  | available for TCBs, without having to change the TCA prescaler. For   |
+  | more information on this, see: https://github.com/SpenceKonde/        |
+  | AVR-Guidance/blob/master/CCL_EVSYS_hacks/CCL_prescaling.md            |
+  |                                                                       |
+  |***********************************************************************/
 
 #include <Logic.h>
 #include <Event.h>
 
 //#define SHOW_TCD_DEMO
-
 
 void setup() {
   #if defined(SHOW_TCD_DEMO) && !defined(MEGATINYCORE)
@@ -69,7 +75,6 @@ void setup() {
   Serial.begin(115200);
 }
 
-
 void demo1() {
   /* Async Demo 1: Just how fast is this "asynchronous" stuff?
    *
@@ -78,26 +83,22 @@ void demo1() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::disable;          // No output filter enabled
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::disable;          // No output filter enabled
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Not Used. Stop Event0 (if it was running).
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
   Logic1.init();                            // Initialize logic block 1 to apply the enable=false
-
 
   Logic::start();                           // Start the CCL hardware
 }
@@ -115,32 +116,28 @@ void demo2() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::link;                 // Use output of next logic block (Logic1)
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::disable;          // No output filter enabled
+  Logic0.input0 = logic::in::link;                 // Use output of next logic block (Logic1)
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::disable;          // No output filter enabled
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Not Used. Stop Event0 (if it was running).
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = true;                     // Enable logic block 1
-  Logic1.input0 = in::feedback;             // use output of even-numbered block, ie, block 0
-  Logic1.input1 = in::masked;               // masked
-  Logic1.input2 = in::masked;               // masked
-  Logic1.output = out::enable;              // enable logic block 1 output pin
-  Logic1.filter = filter::disable;          // No output filter enabled
+  Logic1.input0 = logic::in::feedback;             // use output of even-numbered block, ie, block 0
+  Logic1.input1 = logic::in::masked;               // masked
+  Logic1.input2 = logic::in::masked;               // masked
+  Logic1.output = logic::out::enable;              // enable logic block 1 output pin
+  Logic1.filter = logic::filter::disable;          // No output filter enabled
   Logic1.truth = 0x02;                      // Set truth table: Copy, HIGH if input0 HIGH
   Logic1.init();                            // Initialize logic block 1
-
 
   Logic::start();                           // Start the CCL hardware
 
@@ -158,11 +155,11 @@ void demo3() {
 
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::event_a;              // use event channel A - a virtual feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::disable;          // No output filter enabled
+  Logic0.input0 = logic::in::event_a;              // use event channel A - a virtual feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::disable;          // No output filter enabled
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
 
@@ -179,7 +176,6 @@ void demo3() {
   Logic::start();                           // Start the CCL hardware
 
 }
-
 
 void demo4() {
   /* Async demo 4: Using both second logic block and event stages
@@ -201,11 +197,11 @@ void demo4() {
 
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::link;                 // link - use output of Logic1
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::disable;          // No output filter enabled
+  Logic0.input0 = logic::in::link;                 // link - use output of Logic1
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::disable;          // No output filter enabled
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
 
@@ -217,11 +213,11 @@ void demo4() {
 
   /* Logic1 - CCL LUT1 */
   Logic1.enable = true;                     // Enable logic block 1
-  Logic1.input0 = in::event_a;              // use event channel A
-  Logic1.input1 = in::masked;               // masked
-  Logic1.input2 = in::masked;               // masked
-  Logic1.output = out::enable;              // enable logic block 1 output pin
-  Logic1.filter = filter::disable;          // No output filter enabled
+  Logic1.input0 = logic::in::event_a;              // use event channel A
+  Logic1.input1 = logic::in::masked;               // masked
+  Logic1.input2 = logic::in::masked;               // masked
+  Logic1.output = logic::out::enable;              // enable logic block 1 output pin
+  Logic1.filter = logic::filter::disable;          // No output filter enabled
   Logic1.truth = 0x02;                      // Set truth table: Copy, HIGH if input0 HIGH
   Logic1.init();                            // Initialize logic block 0
 
@@ -244,26 +240,22 @@ void demo5() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::sync;             // Synchronizer - 2 clock-cycle delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::sync;             // Synchronizer - 2 clock-cycle delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Not Used. Stop Event0 (if it was running).
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
   Logic1.init();                            // Initialize logic block 1 to apply the enable=false
-
 
   Logic::start();                           // Start the CCL hardware
 }
@@ -279,26 +271,22 @@ void demo6() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::filter;           // Filter - 4 clock-cycle delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock-cycle delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Not Used. Stop Event0 (if it was running).
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
   Logic1.init();                            // Initialize logic block 1 to apply the enable=false
-
 
   Logic::start();                           // Start the CCL hardware
 }
@@ -314,36 +302,31 @@ void demo7() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::link;                 // output from Logic1
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin or PA4 (ATtiny))
-  Logic0.filter = filter::filter;           // Filter - 4 clock-cycle delay each transition
+  Logic0.input0 = logic::in::link;                 // output from Logic1
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin or PA4 (ATtiny))
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock-cycle delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Not Used. Stop Event0 (if it was running).
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = true;                     // Enable logic block 1
-  Logic1.input0 = in::feedback;             // feedback (from logic0)
-  Logic1.input1 = in::masked;               // masked
-  Logic1.input2 = in::masked;               // masked
-  Logic1.output = out::enable;              // enable logic block 1 output pin
-  Logic1.filter = filter::sync;             // Synchronizer - 2 clock delay each transition
+  Logic1.input0 = logic::in::feedback;             // feedback (from logic0)
+  Logic1.input1 = logic::in::masked;               // masked
+  Logic1.input2 = logic::in::masked;               // masked
+  Logic1.output = logic::out::enable;              // enable logic block 1 output pin
+  Logic1.filter = logic::filter::sync;             // Synchronizer - 2 clock delay each transition
   Logic1.truth = 0x02;                      // Set truth table: Copy, HIGH if input0 HIGH
   Logic1.init();                            // Initialize logic block 1
 
   Logic::start();                           // Start the CCL hardware
 }
-
 
 void demo8() {
   /* Sync demo 4: Using other logic block as clock MULTIPLIES the delays
@@ -376,19 +359,16 @@ void demo8() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::link;                 // input2 (used as clock) from Logic1
-  Logic0.clocksource = clocksource::in2;    // Use input 2 as clock instead of the default
-  Logic0.output = out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
-  Logic0.filter = filter::filter;           // Filter - 4 clock delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::link;                 // input2 (used as clock) from Logic1
+  Logic0.clocksource = logic::clocksource::in2;    // Use input 2 as clock instead of the default
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Stop Event0 (if it was running)
@@ -396,23 +376,18 @@ void demo8() {
   Event0.set_user(user::ccl1_event_a);      // Connect Event0 (carrying Logic1 output) to Logic1 event A input
   Event0.start();                           // Enable Event0
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = true;                     // Enable logic block 1
-  Logic1.input0 = in::event_a;              // use event A, which is coming from output of Logic1 (ie, feedback for an odd block)
-  Logic1.input1 = in::masked;               // masked
-  Logic1.input2 = in::masked;               // masked
-  Logic1.output = out::enable;              // enable logic block 1 output pin
-  Logic1.filter = filter::filter;           // Filter - 4 clock delay each transition
+  Logic1.input0 = logic::in::event_a;              // use event A, which is coming from output of Logic1 (ie, feedback for an odd block)
+  Logic1.input1 = logic::in::masked;               // masked
+  Logic1.input2 = logic::in::masked;               // masked
+  Logic1.output = logic::out::enable;              // enable logic block 1 output pin
+  Logic1.filter = logic::filter::filter;           // Filter - 4 clock delay each transition
   Logic1.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic1.init();                            // Initialize logic block 1
 
-
-
   Logic::start();                           // Start the CCL hardware
 }
-
-
 
 void demo9a() {
   /* Using prescaled clocks 1: TCA0 (if you want to try this and don't have a Dx or tiny 1-series to play with)
@@ -433,16 +408,14 @@ void demo9a() {
 
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::link;                 // input2 (used as clock) from Logic1
-  Logic0.clocksource = clocksource::in2;    // Use input 2 as clock instead of the default
-  Logic0.output = out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
-  Logic0.filter = filter::filter;           // Filter - 4 clock delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::link;                 // input2 (used as clock) from Logic1
+  Logic0.clocksource = logic::clocksource::in2;    // Use input 2 as clock instead of the default
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Stop Event0 (if it was running)
@@ -450,14 +423,13 @@ void demo9a() {
   Event0.set_user(user::ccl1_event_a);      // Connect Event0 (carrying Logic1 output) to Logic1 event A input
   Event0.start();                           // Enable Event0
 
-
   /* Logic1 - CCL LUT1 */
   Logic1.enable = true;                     // Enable logic block 1
-  Logic1.input0 = in::event_a;              // use event A, which is coming from output of Logic1 (ie, feedback for an odd block)
-  Logic1.input1 = in::masked;               // masked
-  Logic1.input2 = in::masked;               // masked
-  Logic1.output = out::enable;              // enable logic block 1 output pin
-  Logic1.filter = filter::sync;             // Filter - 4 clock delay each transition
+  Logic1.input0 = logic::in::event_a;              // use event A, which is coming from output of Logic1 (ie, feedback for an odd block)
+  Logic1.input1 = logic::in::masked;               // masked
+  Logic1.input2 = logic::in::masked;               // masked
+  Logic1.output = logic::out::enable;              // enable logic block 1 output pin
+  Logic1.filter = logic::filter::sync;             // Filter - 4 clock delay each transition
   Logic1.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic1.init();                            // Initialize logic block 1
 
@@ -491,7 +463,6 @@ void demo9a() {
   // And turn it back on!
   TCA0.SINGLE.CTRLA |= TCA_SINGLE_CLKSEL_DIV256_gc | TCA_SINGLE_ENABLE_bm;
 
-
 }
 
 #if !defined(DX_14_PINS)
@@ -518,21 +489,19 @@ void demo9b() {
 
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.clocksource = clocksource::clk_per;// Use CLK_PER (default) as clock source once more.
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::filter;           // Filter - 4 clock-cycle delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.clocksource = logic::clocksource::clk_per;// Use CLK_PER (default) as clock source once more.
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock-cycle delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.set_generator(gen::ccl0_out);      // Use output of Logic0
   Event0.set_user(user::tcb0_cnt);          // Connect Event0 (carrying Logic0 output) to TCB0 count
   Event0.start();                           // Enable Event0
-
 
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
@@ -542,7 +511,6 @@ void demo9b() {
   Event1.stop();                            // Not Used. Stop Event1 (if it was running).
 
   Logic::start();                           // Start the CCL hardware
-
 
   /* TCB0 - Timer/Counter Type B */
   TCB0.CTRLA = 0;
@@ -566,7 +534,6 @@ void demo9b() {
    * and you can use it on everything.
    */
 
-
 }
 
 void demo9d() {
@@ -585,8 +552,16 @@ void demo9d() {
    * it short - at least if you want the first few demos to work with the jumper in place.
    * I used a piece of female pin header with the two middle pins yanked out, and 4-hole piece of strip-board.
    *
-   * This is not a guide to configuration of the the Type D timer for Arduino users. That is a subject for an entirely different document. The TCD0
-   * configuration steps are not commented extensively. Refer to the datasheet for more detailed information; it may be the most complicated
+   * This is not a guide to configuration of the the Type D timer for Arduino users. That is a subject for an entirely different document. Preferably
+   * one written by someone else because the TCD0 is a right bitch to deal with. Not only is it the most complicated peripheral by number of pages in
+   * the datasheet, that longest-chapter is woefully terse and fails to fully elucidate the functioning of the timer. They could have gon on for
+   * another 10-20 pages and still left some questions. "What about these TCD tech briefs?" you ask? Have you read them? Go do that.
+   * Tell me whether you could have written the same thing after reading the TCD chapter? I'm pretty sure I could have, even before i'd figure out how
+   * to make the TCD do much of anything useful.  - they're totally worthelss. I don't think Microchip's documentation people, at least when the briefs were
+   * written, had a deep upderstanding of The TCD0 either. That timer is very user unfriendly. In fact if it were any more user unfriendly
+   * the chip would need  an extra peripheral: a hand that would  reach out of the chip and beat you over the head with a rolled up datasheet (which would
+   * really hurt, recall that a printed datasheet would comprise a stream and a half of copy paper).
+   * Anyway, that configuration steps are not commented extensively. Refer to the datasheet for more detailed information; it may be the most complicated
    * peripheral of the AVR architecture.
    *
    */
@@ -595,20 +570,18 @@ void demo9d() {
 
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::feedback;             // feedback
-  Logic0.input1 = in::masked;               // masked
-  Logic0.input2 = in::masked;               // masked
-  Logic0.output = out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
-  Logic0.filter = filter::filter;           // Filter - 4 clock-cycle delay each transition
+  Logic0.input0 = logic::in::feedback;             // feedback
+  Logic0.input1 = logic::in::masked;               // masked
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin on PA3 (non-tiny) or PA4 (tiny)
+  Logic0.filter = logic::filter::filter;           // Filter - 4 clock-cycle delay each transition
   Logic0.truth = 0x01;                      // Set truth table: Invert, HIGH if input0 LOW
   Logic0.init();                            // Initialize logic block 0
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.set_generator(gen::ccl0_out);      // Use output of Logic0
   Event0.set_user(user::tcb0_cnt);          // Connect Event0 (carrying Logic0 output) to TCB0 count
   Event0.start();                           // Enable Event0
-
 
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
@@ -618,7 +591,6 @@ void demo9d() {
   Event1.stop();                            // Not Used. Stop Event1 (if it was running).
 
   Logic::start();                           // Start the CCL hardware
-
 
   /* TCD0 - Timer/Counter Type D */
   TCD0.CTRLA = 0;                           // Stop the timer, clear CTRLA.
@@ -635,7 +607,6 @@ void demo9d() {
   Serial.println("Before: ~1.46 kHz @ 24 MHz OSCHF/CLK_PER");
   analogWrite(PIN_PA6, 128);                 // Output 50% duty cycle on PIN_PA6
   delay(5000);
-
 
   /* TCD0 - Timer/Counter Type D */
   TCD0.CTRLA &= ~TCD_ENABLE_bm;             // Stop the timer
@@ -670,11 +641,9 @@ void demo10() {
    */
   Logic::stop();                            // Stop the CCL so changes can be made
 
-
   /* CLKCTRL - Clock Controller */
   // Enable the PLL -
   _PROTECTED_WRITE(CLKCTRL_PLLCTRLA, CLKCTRL_MULFAC_2x_gc);
-
 
   /* TCD0 - Timer/Counter Type D */
   TCD0.CTRLA = 0;                           // Stop the timer, clear CTRLA.
@@ -686,27 +655,22 @@ void demo10() {
   while (!(TCD0.STATUS & TCD_ENRDY_bm));     // Wait until ENRDY (Enable Ready)
   TCD0.CTRLA |= TCD_ENABLE_bm;              // Re-enable TCD0
 
-
-
   /* Logic0 - CCL LUT0 */
   Logic0.enable = true;                     // Enable logic block 0
-  Logic0.input0 = in::masked;               // masked - this would be WOA, we want WOB
-  Logic0.input1 = in::tcd;                  // TCD0 WOB
-  Logic0.input2 = in::masked;               // masked
-  Logic0.clocksource = clocksource::clk_per;// Nothing clock-dependent here.
-  Logic0.output = out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
-  Logic0.filter = filter::disable;          // No need for filter
+  Logic0.input0 = logic::in::masked;               // masked - this would be WOA, we want WOB
+  Logic0.input1 = logic::in::tcd;                  // TCD0 WOB
+  Logic0.input2 = logic::in::masked;               // masked
+  Logic0.clocksource = logic::clocksource::clk_per;// Nothing clock-dependent here.
+  Logic0.output = logic::out::enable;              // Enable logic block 0 output pin PA3 or PA4 (ATtiny))
+  Logic0.filter = logic::filter::disable;          // No need for filter
   Logic0.truth = 0x04;                      // Set truth table: Copy, HIGH if input1 HIGH
   Logic0.init();                            // Initialize logic block 0
-
-
 
   /* Event0 - EVSYS CHANNEL0 */
   Event0.stop();                            // Stop Event0 (if it was running)
   Event0.set_generator(gen::ccl0_out);      // Use output of Logic1
   Event0.set_user(user::tcb0_cnt);          // Connect Event0 (carrying Logic0 output) to TCB0 COUNT
   Event0.start();                           // Enable Event0
-
 
   /* Logic1 - CCL LUT1 */
   Logic1.enable = false;                    // Not using Logic1
@@ -715,21 +679,14 @@ void demo10() {
   /* Event1 - EVSYS CHANNEL1 */
   Event1.stop();                            // Not Used. Stop Event1 (if it was running).
 
-
   /* TCB0 - Timer/Counter Type B */
   analogWrite(PIN_TCB0_WO_INIT, 128);               // Output some pwm to demo frequency
   TCB0.CTRLA = 0;                                   // Disable TCB0
   TCB0.CTRLA = TCB_CLKSEL_EVENT_gc | TCB_ENABLE_bm; // Switch to event clock & enable
   Serial.println("After: ~10.4 kHz");               // 24*2 / 18 = 2.667 MHz, 2.667 MHzz / 255 count/cycle = ~10.4 kHz
 
-
-
-
   Logic::start();                           // Start the CCL hardware
 }
-
-
-
 
 void loop() {
   demo1(); // Async - timer feeding back on itself reaching mindboggling speeds.

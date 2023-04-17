@@ -1,4 +1,4 @@
-/*  (C) Spence Konde 2021 open source (LGPL2.1 see LICENSE.md) based on exisisting Arduino cores.*/
+/*  (C) Spence Konde 2021-2022 open source (LGPL2.1 see LICENSE.md) based on existing Arduino cores.*/
 //                                                                                    *INDENT-OFF*
 /*
  ###  #     # ####      ####  ####       ##   ###
@@ -8,10 +8,10 @@
 #   #    #    #   #     ####  ####      ####  ###      ###  #  #  #
 ===================================     ----------     #
 Variant Definition file for generic DD parts           #
-with 32 pins.
+with 28 pins.
 
 Part Numbers:
-AVR64DA28 AVR32DA28 AVR16DD28
+AVR64DD28 AVR32DD28 AVR16DD28
 
 See VariantTemplate.h in extras folder an extensively annotated copy.
 
@@ -46,12 +46,9 @@ Include guard and include basic libraries. We are normally including this inside
 #define PIN_PC1 (9)
 #define PIN_PC2 (10)
 #define PIN_PC3 (11)
-#define PIN_PD0 (12)   // and a full port for the PD
-/* On DD, this isn't a pin - there, everything else NOT_A_PIN's pin 12
- * but we can add 3 to it to get PIN_PD3, for example.
- * Which is important, since it's pin0 on the port. */
-#define PIN_PD1 (13)
-#define PIN_PD2 (14)
+#define PIN_PD0 (12) /* On DD, this isn't a pin - there, everything else NOT_A_PIN's pin 12 */
+#define PIN_PD1 (13) /* but we can add 3 to it to get PIN_PD3 */
+#define PIN_PD2 (14) /* for example. Which is important, since it's pin0 on the port. */
 #define PIN_PD3 (15)
 #define PIN_PD4 (16)
 #define PIN_PD5 (17)
@@ -86,37 +83,37 @@ Include guard and include basic libraries. We are normally including this inside
   #define EXTERNAL_NUM_INTERRUPTS        47
 #endif
 
-#if !defined(USING_BOOTLOADER) || defined(ASSUME_MVIO_FUSE) /* When not using a bootloader, we know if MVIO is enabled because the fuse is set on upload */
+#if !defined(USING_OPTIBOOT) || defined(ASSUME_MVIO_FUSE) /* When not using a bootloader, we know if MVIO is enabled because the fuse is set on upload */
   #if defined(MVIO_ENABLED) /* MVIO disables ADC on PORTC */
     #define IS_MVIO_ENABLED()                    (1)
-    #define digitalPinToAnalogInput(p)           ((p) >= PIN_PD0 ? (((p) < PIN_PF0) ? (p) - PIN_PD0 : ((p) <= PIN_PF1 ? ((p) - 4) : NOT_A_PIN)):(((p) > PIN_PA1 && (p) < PIN_PC0) ? (p) + 20 : NOT_A_PIN))
-    #define analogChannelToDigitalPin(p)         ((p) > 27 ? NOT_A_PIN : ((p) < 8 ? ((p) + PIN_PD0) : (p) > 21 ? (p) - 20 : (((p) == 16 ? PIN_PF0) : ((p) == 17 ? PIN_PF1 : NOT_A_PIN))))
+    #define digitalPinToAnalogInput(p)           ((p) >= PIN_PD0  ? (((p) < PIN_PF0)  ? ((p) - PIN_PD0)  : ((p) <= PIN_PF1 ? ((p) - 4)  : NOT_A_PIN)) : (((p) > PIN_PA1 && (p) < PIN_PC0) ? ((p) + 20)        :   NOT_A_PIN))
+    #define analogChannelToDigitalPin(p)         ((p) > 27        ?  NOT_A_PIN        : ((p) < 8         ? ((p) + PIN_PD0) :  (p) > 21  ? (p) - 20    : (((p) == 16       ? PIN_PF0)  : ((p) == 17  ? PIN_PF1 :   NOT_A_PIN))))
   #else
     #define IS_MVIO_ENABLED()                    (0)
-    #define digitalPinToAnalogInput(p)           ((p) >= PIN_PD0 ? (((p) < PIN_PF0) ? (p) - PIN_PD0 : ((p) <= PIN_PF1 ? ((p) - 4) : NOT_A_PIN)):(((p) > PIN_PA1) ? (p) + 20 : NOT_A_PIN))
-    #define analogChannelToDigitalPin(p)         ((p) > 31  ? NOT_A_PIN : ((p) < 8 ? ((p) + PIN_PD0) : (p) > 21 ? (p) - 20 : (((p) == 16 ? PIN_PF0) : ((p) == 17 ? PIN_PF1 : NOT_A_PIN))))
+    #define digitalPinToAnalogInput(p)           ((p) >= PIN_PD0  ? (((p) < PIN_PF0)  ? ((p) - PIN_PD0)  : ((p) <= PIN_PF1 ? ((p) - 4)  : NOT_A_PIN)) : (((p) > PIN_PA1)  ? ((p) + 20 ) :                         NOT_A_PIN))
+    #define analogChannelToDigitalPin(p)         ((p) > 31        ?  NOT_A_PIN        : ((p) < 8         ? ((p) + PIN_PD0) :  (p) > 21  ? (p) - 20    : (((p) == 16       ? PIN_PF0)    : ((p) == 17  ? PIN_PF1 : NOT_A_PIN))))
   #endif
 #else /* If we ARE using a bootloader, we can't be sure if MVIO is enabled :-( */
   #define IS_MVIO_ENABLED() ((FUSE.SYSCFG1 & 0x01) == 0)
-  #define digitalPinToAnalogInput(p)           ((p) >= PIN_PD0 ? (((p) < PIN_PF0) ? (p) - PIN_PD0 : ((p) <= PIN_PF1 ? ((p) - 4) : NOT_A_PIN)):(((p) > PIN_PA1 && !(IS_MVIO_ENABLED() && (p) >= PC0)) ? (p) + 20 : NOT_A_PIN))
-  #define analogChannelToDigitalPin(p)         ((p) > (IS_MVIO_ENABLED() ? 27 : 31) ? NOT_A_PIN : ((p) < 8 ? ((p) + PIN_PD0) : (p) > 21 ? (p) - 20 : (((p) == 16 ? PIN_PF0) : ((p) == 17 ? PIN_PF1 : NOT_A_PIN))))
+  #define digitalPinToAnalogInput(p)             ((p) >= PIN_PD0  ? (((p) < PIN_PF0)  ? (p) - PIN_PD0    : ((p) <= PIN_PF1 ? ((p) - 4)       : NOT_A_PIN))           : (((p) > PIN_PA1 && !(IS_MVIO_ENABLED() && (p) >= PIN_PC0)) ? ((p) + 20) : NOT_A_PIN))
+  #define analogChannelToDigitalPin(p)  ((p) > (IS_MVIO_ENABLED() ? 27 : 31)          ? NOT_A_PIN        : ((p) < 8        ? ((p) + PIN_PD0) : (p) > 21 ? ((p) - 20) : (((p) == 16 ? PIN_PF0) : ((p) == 17                        ? PIN_PF1    : NOT_A_PIN))))
 #endif
 #define analogInputToDigitalPin(p)                        analogChannelToDigitalPin((p) & 0x7F)
 #define digitalOrAnalogPinToDigital(p)    (((p) & 0x80) ? analogChannelToDigitalPin((p) & 0x7F) : (((p) <= NUM_DIGITAL_PINS) ? (p) : NOT_A_PIN))
-#define portToDigitalPinZero(port)        ((port) == 0 ? 0 : ((port)== 2 ? 8 : ((port)== 3 ? 12 : ((port)== 5 ? 20 : NOT_A_PIN))))
+#define portToPinZero(port)               ((port) == PA ? PIN_PA0 : ((port)== PC ? PIN_PC0 : ((port)== PD ? PIN_PD0 : ((port)== PF ? PIN_PF0 : NOT_A_PIN))))
 
 
 // PWM pins
 
 
 #if defined(MILLIS_USE_TIMERB0)
-  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA3) || ((p) == PIN_PC0)
+  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA3) || ((p) == PIN_PC0))
 #elif defined(MILLIS_USE_TIMERB1)
-  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PC0)
+  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PC0))
 #elif defined(MILLIS_USE_TIMERB2)
-  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PA3)
+  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PA3))
 #else //no TCB's are used for millis
-  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PA3) || ((p) == PIN_PC0)
+  #define digitalPinHasPWMTCB(p) (((p) == PIN_PA2) || ((p) == PIN_PA3) || ((p) == PIN_PC0))
 #endif
 
 // Timer pin mapping
@@ -127,6 +124,10 @@ Include guard and include basic libraries. We are normally including this inside
 #define TCD0_PINS (PORTMUX_TCD0_PORTF)        // TCD0 output on PF0 and 1. Same as PORTMUX_TCD0_ALT2_gc
 
 #define PIN_TCA0_WO0_INIT (PIN_PD0)
+#define PIN_TCB0_WO_INIT  (PIN_PA2)
+#define PIN_TCB1_WO_INIT  (PIN_PA3)
+#define PIN_TCB2_WO_INIT  (PIN_PC0)
+#define PIN_TCD0_WOA_INIT (PIN_PF0)
 
 
 //#define USE_TIMERD0_PWM is automatically set unless defined as 0 or 1; it will be enabled UNLESS TIMERD0_CLOCK_SETTING is and neither TIMERD0_TOP_SETTING nor F_TCD is.
@@ -146,7 +147,7 @@ Include guard and include basic libraries. We are normally including this inside
 #define SPI_INTERFACES_COUNT   1
 
 // SPI 0
-#define SPI_MUX                         PORTMUX_SPI0_DEFAULT_g
+#define SPI_MUX                         PORTMUX_SPI0_DEFAULT_gc
 #define SPI_MUX_PINSWAP_3               PORTMUX_SPI0_ALT3_gc
 #define SPI_MUX_PINSWAP_4               PORTMUX_SPI0_ALT4_gc
 #define SPI_MUX_PINSWAP_5               PORTMUX_SPI0_ALT5_gc
@@ -487,5 +488,11 @@ const uint8_t digital_pin_to_timer[] = {
 };
 
 #endif
-
+  // These are used for CI testing. They should *not* *ever* be used except for CI-testing where we need to pick a viable pin to compile a sketch with that won't generate compile errors (we don't care whether it would;d actually work, we are concerned with )
+  #if CLOCK_SOURCE != 0
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 2)
+  #else
+    #define _VALID_DIGITAL_PIN(pin)  ((pin) >= && (pin) < 4 ? ((pin) + 0 ): NOT_A_PIN)
+  #endif
+  #define    _VALID_ANALOG_PIN(pin)  ((pin) >= 0 && ((pin) <= 4) ?                     ((pin) + PIN_PD4) : NOT_A_PIN)
 #endif
