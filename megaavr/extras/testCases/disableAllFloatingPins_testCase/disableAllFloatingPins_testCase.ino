@@ -1,3 +1,4 @@
+#include "LowPower.cpp"
 // Use a voltmeter or power debugger to check the power draw
 void setup() {
   delay(1000);

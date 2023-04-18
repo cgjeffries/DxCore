@@ -14,26 +14,26 @@ configuring the ADC module.
 Structure for containing all of the ADC configuration parameters:
 ```c
 typedef struct ADCConfig_struct {
-	uint8_t convMode;    // ADC conversion mode (single-ended/differential)
-	uint8_t muxNeg;      // Negative pin for differential ADC conversion
-	uint8_t resolution;  // ADC bit resolution
-	uint8_t prescaler;   // ADC clock prescaler value
-	uint8_t sampleNum;   // Number of ADC samples to accumulate
-	uint8_t sampleDelay; // Delay between ADC samples in accumulation mode
-	uint8_t sampleLen;   // ADC sampling time in ADC clock cycles
+    uint8_t convMode;    // ADC conversion mode (single-ended/differential)
+    uint8_t muxNeg;      // Negative pin for differential ADC conversion
+    uint8_t resolution;  // ADC bit resolution
+    uint8_t prescaler;   // ADC clock prescaler value
+    uint8_t sampleNum;   // Number of ADC samples to accumulate
+    uint8_t sampleDelay; // Delay between ADC samples in accumulation mode
+    uint8_t sampleLen;   // ADC sampling time in ADC clock cycles
 } ADCConfig;
 ```
 
 A default instance of the struct that can be copied to get default config values:
 ```c
 const ADCConfig ADCConfig_default = {
-	.convMode = 0,
-	.muxNeg = 0x16,
-	.resolution = 10,
-	.prescaler = ADC_DEFAULT_PRESCALER,
-	.sampleNum = 0,
-	.sampleDelay = 0,
-	.sampleLen = 14
+    .convMode = 0,
+    .muxNeg = 0x16,
+    .resolution = 10,
+    .prescaler = ADC_DEFAULT_PRESCALER,
+    .sampleNum = 0,
+    .sampleDelay = 0,
+    .sampleLen = 14
 };
 ```
 
@@ -124,4 +124,4 @@ Valid values for `prescaler`:
 - 128: clock divided by 128
 - 256: clock divided by 256
 
-Relevant register: `ADC0.CTRLC:PRESC`
+Relevant register: `ADC0.CTRLC:PRESC

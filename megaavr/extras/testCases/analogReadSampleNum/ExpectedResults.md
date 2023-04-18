@@ -10,4 +10,4 @@ Result with 64 samples accumulated: 60382
 Result with 190 samples accumulated: 944  
 
 This last result should return to a default of 1 sample since 190 is not an expected value.  
-Anything with a result that exceeds 65535 will behave unexpectedly since that is larger than the results register can store.  
+Anything with a result that exceeds 65535 will behave unexpectedly since that is larger than the results register can store.

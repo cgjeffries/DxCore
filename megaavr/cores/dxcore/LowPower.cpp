@@ -76,8 +76,8 @@ void wakeUsingRTC(){
     /* Initialize RTC: */
   RTCSync();
   RTC.CLKSEL = RTC_CLKSEL_OSC1K_gc;  /* 1.024 kHz from OSC32K */
-  RTC.INTCTRL = RTC_OVF_bm;					// enable overflow interrupt
-  RTC.CTRLA = 0 | 0x80 | 1;		// set enabled in standby and enable RTC
+  RTC.INTCTRL = RTC_OVF_bm;                    // enable overflow interrupt
+  RTC.CTRLA = 0 | 0x80 | 1;        // set enabled in standby and enable RTC
 }
 
 //function that scales millis to RTC ticks based on 1024 ticks/sec
@@ -115,7 +115,7 @@ ISR(RTC_CNT_vect)
 //disable the RTC, that way it won't keep generating interrupts
 void disableRTC(){
   RTCSync();
-  RTC.CTRLA = 0;					// disable RTC
+  RTC.CTRLA = 0;                    // disable RTC
 }
 
 // MALS-92

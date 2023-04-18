@@ -4,6 +4,8 @@
 // Slave is AVR128DA48 Curiosity Nano board
 // Recommended baud for Serial1 is 115200
 #include <Wire.h>
+#include "Arduino.h"
+
 
 #define SlaveSerial Serial1
 

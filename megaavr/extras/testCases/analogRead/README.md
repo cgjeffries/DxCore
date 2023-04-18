@@ -23,9 +23,9 @@ to PD0 of the DA board.
 3. View results in your favorite serial terminal (We used TeraTerm)
 4. Default test has `V_ADCREF` set to 1.024 and `DAC_REF` at 2.048. Modify `EXTERNAL_PIN`
 volatge (DC value of signal noise generator) to desired test value.
-	- Single-ended: Signal Noise generator should be set to DC between 0 and 1.0 V 
-	for valid readings.
-	- Differential: Signal Noise generator should be set from 1.0 V to 3.0 V (max 
+    - Single-ended: Signal Noise generator should be set to DC between 0 and 1.0 V 
+    for valid readings.
+    - Differential: Signal Noise generator should be set from 1.0 V to 3.0 V (max 
  possible output was 2.5 V for our generator) for valid output.
 5. Upload sketch and review Expected vs Result output.
 
@@ -42,4 +42,3 @@ or rationalize this behavior. The modified behavior is shown in the equations
 provided.
  - Differential 10-bit conversion: ( (`DAC_REF` - (`EXTERNAL_PIN` / 2)) / `V_ADCREF` ) * 512;
  - Differential 12-bit conversion:  ( (`DAC_REF` - (`EXTERNAL_PIN` / 2)) / `V_ADCREF` ) * 2048;
-
