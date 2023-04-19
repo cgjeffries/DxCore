@@ -29,6 +29,6 @@ Figure 6 - The 3v3 pin and the GND pin of the ATmega board's connections
 
 7. Add a connection from the GND of the DA board to the GND of the ATmega board. This connection is not needed if the two boards are connected to a power source that already has ground connected in it.
 ![Text](IMG-0601.jpg)
-Figure 8 - Female-to-male wires comming from the GND and 3v3 pins of the ATmega board
+Figure 8 - Female-to-male wires coming from the GND and 3v3 pins of the ATmega board
 
 8. Use the two Arduino .ino programs to use TWI connection. The master (ATmega board) will have user input from a Serial monitor, and the slave (DA board) will wait for a message from the master board using TWI address matching. For those demo programs, the slave will also wake up from standby mode because TWI address matching is an interrupt.

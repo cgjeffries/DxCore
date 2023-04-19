@@ -36,7 +36,7 @@ void loop() {
 // MALS-115
 void sleepUntilTWIMatch(uint8_t twiAddress, bool useInternalPullups, SLPCTRL_SMODE_t sleepMode, bool flushSerial) {
   if (useInternalPullups) {
-    Wire.usePullups(); // Not recommended, not as reliable as exteral pullups
+    Wire.usePullups(); // Not recommended, not as reliable as external pullups
   }
   Wire.begin(twiAddress);
   Wire.onReceive(receiveFromMaster);

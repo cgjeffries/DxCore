@@ -1,5 +1,5 @@
 # `disableInputBuffers` Test Case
-This test case validates the `disableInputBuffers` and `enableInputBuffers` functions. 
+This test case validates the `disableInputBuffers` and `enableInputBuffers` functions.
 
 ## Instructions
 1. Connect the Curiosity nano board to your computer

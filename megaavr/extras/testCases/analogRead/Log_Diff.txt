@@ -1,10 +1,10 @@
 double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
 double EXTERNAL_PIN = 1.25; // POSITIVE input pin volatge
-double DAC_REF = 2.500; 
+double DAC_REF = 2.500;
 
 // Expected output should match those from the datasheet however outputs are about double what the expected outputs should be.
 int16_t expected_10_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 512;
-int16_t expected_12_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 2048; 
+int16_t expected_12_diff = ( (DAC_REF - EXTERNAL_PIN) / VADCREF ) * 2048;
 
 -------------------------------------------------------------------------------------------------
 

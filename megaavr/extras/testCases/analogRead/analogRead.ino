@@ -6,23 +6,23 @@
 
 int SINGLE_POS = A0;
 int DIFF_POS = ADC_DACREF0;
-int POS_PIN = A0; //A0; // Positive pin (DAC or swap `A0;` to use external pin PD0) 
+int POS_PIN = A0; //A0; // Positive pin (DAC or swap `A0;` to use external pin PD0)
 int NEG_PIN = A0; // select the input pin NEGATIVE (PD0 -> pins-arduino.h )
 int RES = 10;
 int CONVMODE = 0;
 
-// 1.024, 2.048, 4.096, 2.500, 4.006 
+// 1.024, 2.048, 4.096, 2.500, 4.006
 double VADCREF = 1.024; // VREF;  (Set VREF in setVREF() for expected value)
-double EXTERNAL_PIN = 1.25; // POSITIVE input pin volatge
-double DAC_REF = 2.500; 
-// modify to match input pin voltage (ie. if VREF is 1.024v and input pin is 0.5v expected should be ~512) 
+double EXTERNAL_PIN = 1.25; // POSITIVE input pin voltage
+double DAC_REF = 2.500;
+// modify to match input pin voltage (ie. if VREF is 1.024v and input pin is 0.5v expected should be ~512)
 // expected = VREF / EXTERNAL_PIN
-int16_t expected = 0; 
-uint16_t expected_10_single = ( EXTERNAL_PIN / VADCREF ) * 1024; 
-uint16_t expected_12_single = ( EXTERNAL_PIN / VADCREF ) * 4096; 
+int16_t expected = 0;
+uint16_t expected_10_single = ( EXTERNAL_PIN / VADCREF ) * 1024;
+uint16_t expected_12_single = ( EXTERNAL_PIN / VADCREF ) * 4096;
 // Differential equations "reversed" from datasheet, DAC must be positive input, external negative.
 int16_t expected_10_diff = ( ( (EXTERNAL_PIN - DAC_REF) / VADCREF ) * 512 );
-int16_t expected_12_diff = ( ( (EXTERNAL_PIN - DAC_REF) / VADCREF ) * 2048 ); 
+int16_t expected_12_diff = ( ( (EXTERNAL_PIN - DAC_REF) / VADCREF ) * 2048 );
 
 
 void setup() {
@@ -38,14 +38,14 @@ void loop() {
     // muxNeg (Neg pin value for differential mode) (default 0)
     // resolution (12-bit or 10-bit) (default 10)
     // prescaler (2, 4, 8, 12, 16, 20, 24, 28, 32, 48, 64, 96, 128, 256)
-    // sampleNum (1, 2, 4, 8, 16, 32, 64, 128) (default 0) result multiplier  
-    // sampleDelay (values 0-15) (default 0) 
+    // sampleNum (1, 2, 4, 8, 16, 32, 64, 128) (default 0) result multiplier 
+    // sampleDelay (values 0-15) (default 0)
     // sampleLen
     RES = 10;
     CONVMODE = 0;
     POS_PIN = SINGLE_POS;
     expected = expected_10_single;
-    
+   
 
     printSeperator();
     da_Serial.println("             10 bit Single-Ended test");
@@ -69,7 +69,7 @@ void loop() {
     prescalarTest(128);
     prescalarTest(256);
     printSeperator();
-  
+ 
     da_Serial.println("sampleDelay Test");
     for (int i = 0; i <= 10; i++) {
       sampleDelayTest(pow(2,i));
@@ -155,12 +155,12 @@ void loop() {
     printConfigTable(getAnalogReadConfig());
     printSeperator();
 
-    
+   
 
     delay(5000);
   }
 
-// uint16_t expected_10_single = ( EXTERNAL_PIN / VADCREF ) * 1024; 
+// uint16_t expected_10_single = ( EXTERNAL_PIN / VADCREF ) * 1024;
 void print10_single(){
   da_Serial.print("( ");
   da_Serial.print(EXTERNAL_PIN);
@@ -194,7 +194,7 @@ void print12_diff(){
   da_Serial.print("( ( ");
   da_Serial.print(EXTERNAL_PIN);
   da_Serial.print(" - ");
-  da_Serial.print(DAC_REF);  
+  da_Serial.print(DAC_REF); 
   da_Serial.print(" ) / ");
   da_Serial.print( VADCREF);
   da_Serial.print(" ) * 2048 = ");
@@ -246,18 +246,18 @@ void setADC(int _convMode,
       .prescaler = _prescaler,
       .sampleNum = _sampleNum,
       .sampleDelay = _sampleDelay,
-      .sampleLen = _sampleLen 
+      .sampleLen = _sampleLen
     };
     analogReadConfig(modConfig);
     //printConfigTable(getAnalogReadConfig());
 }
 
 void printConfigTable(ADCConfig config) {
-  da_Serial.printf("| %-10s| %-12s| %-12s| %-12s| %-12s| %-12s| %-12s|", 
+  da_Serial.printf("| %-10s| %-12s| %-12s| %-12s| %-12s| %-12s| %-12s|",
   "convMode","muxNeg", "resolution", "prescaler",
   "sampleNum","sampleDelay","sampleLen");
   da_Serial.println();
-  da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|", 
+  da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|",
   config.convMode,config.muxNeg,config.resolution,config.prescaler,
   config.sampleNum,config.sampleDelay,config.sampleLen);
   da_Serial.println();
@@ -270,7 +270,7 @@ void printSeperator() {
 }
 
 void setDAC(double ref) {
-    // DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
+    // DxCore Reference Voltage modes at `megaavr\extras\Ref_Analog.md`
     /*  vref_1v024 = 0x00, // 1.024V
         vref_2v048 = 0x01, // 2.048V
         vref_2v500 = 0x02, // 2.5V
@@ -290,15 +290,15 @@ void setDAC(double ref) {
     } else if(ref == 4.096){
       Comparator.reference = comparator::ref::vref_4v096;
     } else {
-      Comparator.reference = comparator::ref::vref_1v024; 
-    } 
-    
+      Comparator.reference = comparator::ref::vref_1v024;
+    }
+   
     Comparator.init();
     Comparator.start();
 }
 
 void setVREF(double ref){
-  // DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
+  // DxCore Reference Voltage modes at `megaavr\extras\Ref_Analog.md`
     /*| AVR Dx/Ex-series (all)                  | Voltage | Minimum Vdd | Mode # |
       |-----------------------------------------|---------|-------------|--------|
       | `VDD` (default)                         | Vcc/Vdd |             |      5 |
@@ -322,5 +322,5 @@ void setVREF(double ref){
       analogReference(INTERNAL4V1);
     } else {
       analogReference(VDD);
-    } 
+    }
 }

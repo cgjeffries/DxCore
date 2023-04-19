@@ -47,8 +47,8 @@ void sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial = true);
 //////////////////////////////////////////////////////////////
 
 /*
-Utilize the Standby sleep mode to emulate the funcitonality of the standard arduino delay() function, at greatly 
-reduced power draw.
+Utilize the Standby sleep mode to emulate the functionality of the standard
+ arduino delay() function, at greatly reduced power draw.
 */
 void delaySleep(uint32_t millis);
 
@@ -80,11 +80,11 @@ Enables all input buffers. Reverses the effects of disableInputBuffers().
 void enableInputBuffers();
 
 /*
-This should be called at the beginning of setup() then afterwards pins can be 
-configured as desired. Reduces power consumption by preventing unused pins being left as floating, which can cause
-them to rapidly toggle state, which causes input buffers to consume unnecessary power.
-Each pin is set to the OUTPUT pin mode. The user can set each pin to be LOW or HIGH depending on
-the board configuration.
+This should be called at the beginning of setup() then afterwards pins can be
+ configured as desired. Reduces power consumption by preventing unused pins being
+ left as floating, which can cause them to rapidly toggle state, which causes
+ input buffers to consume unnecessary power. Each pin is set to the OUTPUT pin
+ mode. The user can set each pin to be LOW or HIGH depending on the board configuration.
 */
 void disableAllFloatingPins(bool value);
 
@@ -112,8 +112,8 @@ Set the BOD (Brown Out Detection) to polling mode for slower BOD response, but g
 void bodSetPolling();
 
 /*
-Disable the BOD (Brown Out Detection) for reduced power consumption. The system may behave unexpectedly in a 
-brown-out scenario.
+Disable the BOD (Brown Out Detection) for reduced power consumption. The system
+ may behave unexpectedly in a brown-out scenario.
 */
 void bodSetDisabled();
 

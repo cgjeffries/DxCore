@@ -1,5 +1,5 @@
 # `delaySleep` Test Case
-This test case validates the `delaySleep` function. 
+This test case validates the `delaySleep` function.
 
 ## Instructions
 1. Connect the Curiosity Nano board to your computer.

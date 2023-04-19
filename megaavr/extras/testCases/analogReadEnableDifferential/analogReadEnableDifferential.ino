@@ -4,7 +4,7 @@
 #include <Comparator.h>
 #define da_Serial Serial1
 
-int POS_PIN = ADC_DACREF0; //A0; // Positive pin (DAC or swap `A0;` to use external pin PD0) 
+int POS_PIN = ADC_DACREF0; //A0; // Positive pin (DAC or swap `A0;` to use external pin PD0)
 int NEG_PIN = A1; // select the input pin NEGATIVE (PD1 -> pins-arduino.h )
 
 // Calculate Expected Value
@@ -16,13 +16,13 @@ void setup() {
   da_Serial.begin(38400); // Baud rate
 }
 
-void loop() {  
+void loop() { 
 
     // Set DAC -> POSITIVE -> Magnitude of variance
     setDAC();
     // Set VREF -> Magnitude of variance
     setVREF();
-    
+   
     da_Serial.println("10-bit resolution");
     updateResolution(10);
     sample();
@@ -38,7 +38,7 @@ void loop() {
   }
 
 void setDAC() {
-    // DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
+    // DxCore Reference Voltage modes at `megaavr\extras\Ref_Analog.md`
     /*  vref_1v024 = 0x00, // 1.024V
         vref_2v048 = 0x01, // 2.048V
         vref_2v500 = 0x02, // 2.5V
@@ -55,7 +55,7 @@ void setDAC() {
 
 
 void setVREF(){
-  // DxCore Refrence Voltage modes at `megaavr\extras\Ref_Analog.md`
+  // DxCore Reference Voltage modes at `megaavr\extras\Ref_Analog.md`
     /*| AVR Dx/Ex-series (all)                  | Voltage | Minimum Vdd | Mode # |
       |-----------------------------------------|---------|-------------|--------|
       | `VDD` (default)                         | Vcc/Vdd |             |      5 |
@@ -83,7 +83,7 @@ void sample() {
   int out = (avg/sample_index);
   da_Serial.printf("\tACTUAL ADC value  : %d", out);
   da_Serial.println();
-  
+ 
 }
 
 void printExpectedOutput() {
