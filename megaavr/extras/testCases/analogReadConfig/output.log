@@ -1,4 +1,4 @@
-Inital Analog Read Config:
+Initial Analog Read Config:
 | convMode  | muxNeg      | resolution  | prescaler   | sampleNum   | sampleDelay | sampleLen   |
 | 1         | 120         | 12          | 128         | 2           | 1           | 12          |
 Analog Read Config (Set Default):

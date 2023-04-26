@@ -19,21 +19,21 @@ remain the same but there will be more variance in the readings as more noise is
 
 When sample accumulation is enabled, a series of samples will be taken and averaged by the test
 sketch. It is expected that this will result in readings with a lower variance as more samples
-are used. 
+are used.
 
 ## Results
 Full results are recorded in `results.xlsx`. Results were collected for a base input of 1.25V
-with 0.05V, 0.1V, and 0.3V of noise added with varying levels of sample accumulation. 
+with 0.05V, 0.1V, and 0.3V of noise added with varying levels of sample accumulation.
 
-For all noise and accumulation levels, the average ADC reading with approximately 518 as compared to 
-the expected value of 512. As expected, the average reading remained the same regardless of 
+For all noise and accumulation levels, the average ADC reading with approximately 518 as compared to
+the expected value of 512. As expected, the average reading remained the same regardless of
 noise or accumulation settings, with the only difference between different configurations being
-the variance of the readings. 
+the variance of the readings.
 
 The lowest variance reading was recorded when no noise was added to the signal (Figure 1). When
 noise was added to the signal, a significant amount of variance in the readings was introduced,
 with the readings for 0.3V of noise with no accumulation shown in Figure 2. However, as expected,
-enabling sample accumulation resulted in a significantly lower sample variance, shown in Figure 3. 
+enabling sample accumulation resulted in a significantly lower sample variance, shown in Figure 3.
 
 ![Figure 1](fig1.png)
 
@@ -47,5 +47,5 @@ Figure 2: ADC readings for 1.25V with 0.3V of noise added
 
 Figure 3: ADC readings for 1.25V with 0.3V noise added and 128 samples accumulated and averaged
 
-These results were as expected and demonstrate the effectiveness of sample accumulation as a 
+These results were as expected and demonstrate the effectiveness of sample accumulation as a
 noise reduction technique.

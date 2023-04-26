@@ -6,6 +6,6 @@ This test case demonstrates the usage and output of the analogReadConfig functio
 4. Open a serial monitor to view the recorded readings.
 
 ## Results
-The output shows the inital board ADC configuration, updated default 
-configuration, and an arbitrary configuration. Along with the output is an 
+The output shows the Initial board ADC configuration, updated default
+configuration, and an arbitrary configuration. Along with the output is an
 "EXPECTED OUTPUT" row for verification.

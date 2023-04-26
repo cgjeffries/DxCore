@@ -4,7 +4,6 @@
    Free Software - LGPL 2.1, please see LICENCE.md for details */
 
 #include <Arduino.h>
-
 /* Required by some libraries to compile successfully. Even though it's nonsense in Arduino. */
 int atexit(void ( * /*func*/)()) { return 0; }
 
@@ -76,7 +75,7 @@ int main() {
  * clear flags to honor bootloader entry conditions, so I didn't have a choice about that.      *
  * This function is called before *anything* else, so the chip is a blank slate - or it's       *
  * state is unknown. You're probably running at 4 MHz unless it was a dirty reset, in which     *
- * case it could be anything. No timekeeping is possible, period. Tne only exception is the     *
+ * case it could be anything. No timekeeping is possible, period. The only exception is the     *
  * WDT reset timer with is independent of the HF oscillators and is designed to reset you out   *
  * of hangs amd bad states fthat you end up with when a bug causes the code but not the         *
  * hardware to reset,                                                                           *
@@ -94,7 +93,7 @@ int main() {
  * for this sort of thing.
  *
  * * The register in question is GPIOR0 on megaTinyCore, GPR.GPR0 on Dx-series, but both names  *
- * are aliases of eachother per core_devices for compatibility
+ * are aliases of each other per core_devices for compatibility
  */
 
   /* Minimum: Reset if we wound up here through malfunction - this relies on user clearing the  *
@@ -141,8 +140,8 @@ int main() {
  * long time.                                                                                     *
  **************************************************************************************************/
 
+void _initThreeStuff() __attribute__ ((naked)) __attribute__((used)) __attribute__ ((section (".init3")));
 #if (!defined(USING_OPTIBOOT))
-  void _initThreeStuff() __attribute__ ((naked)) __attribute__((used)) __attribute__ ((section (".init3")));
   // this runs, as the name implies, before the main() function is called.
   #if !defined(SPM_FROM_APP)
     // If we're not doing the SPM stuff, we need only check the flags
@@ -164,13 +163,15 @@ int main() {
       onPreMain();
     }
     #if (SPM_FROM_APP == -1)
-      /* Declared as being located in .init3 so it gets put way at the start of the binary. This guarantees that
+      /* Declared as being located in .trampolines so it gets put way at the start of the binary. This guarantees that
        * it will be in the first page of flash. Must be marked ((used)) or LinkTime Optimization (LTO) will see
        * that nothing actually calls it and optimize it away. The trick of course is that it can be called if
        * the user wants to - but it's designed to be called via hideous methods like
        * __asm__ __volatile__ ("call EntryPointSPM" : "+z" (zaddress))
        * see Flash.h */
-      /* No, we CAN'T move it to init3 - PROGMEM goes between trampolines and code! */
+      /* It must be located *before everything* - including PROGMEM, which the compiler puts ahead of .init.
+       * .trampolines however comes before progmem. The function must be naked, it must be used, and you need to guard it
+       * with the rjmp that hops over the spm and ret instructions unless you jump directly to the entrypoint.    */
       void __spm_entrypoint (void) __attribute__ ((naked)) __attribute__((used)) __attribute__ ((section (".trampolines")));
       void __spm_entrypoint (void)
       {
@@ -187,7 +188,6 @@ int main() {
   // We want the vectors in the alt location, it checks, clears, and stashes the reset flags (in GPR0)
   // and it providews the entrypoint we call to write to flash.
 #else
-  void _initThreeStuff() __attribute__ ((naked)) __attribute__((used)) __attribute__ ((section (".init3")));
   void _initThreeStuff() {
     onPreMain();
   }

@@ -11,7 +11,7 @@
   ZeroCross zcd2(2, ZCD2, PORTE.PIN7CTRL);
 #endif
 #if defined(__AVR_DD__)
-  ZeroCross zcd3();
+  ZeroCross zcd3;
 #endif
 
 
@@ -37,7 +37,6 @@ void ZeroCross::init() {
   // Set input
   #if defined(__AVR_DD__)
   PORTC.PIN2CTRL = PORT_ISC_INPUT_DISABLE_gc;
-  PORT_t &output_port = PORTA;
   uint8_t pin_number = PIN7_bm;
   // Set output
   if (output == out::enable) {

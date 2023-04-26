@@ -4,6 +4,8 @@
 // Slave is AVR128DA48 Curiosity Nano board
 // Recommended baud for Serial1 is 115200
 #include <Wire.h>
+#include "Arduino.h"
+
 
 #define SlaveSerial Serial1
 
@@ -37,7 +39,7 @@ void loop() {
 
 void sleepUntilTWIMatch(uint8_t twiAddress, bool useInternalPullups, SLPCTRL_SMODE_t sleepMode, bool flushSerial) {
   if (useInternalPullups) {
-    Wire.usePullups(); // Not recommended, not as reliable as exteral pullup resistors
+    Wire.usePullups(); // Not recommended, not as reliable as external pullup resistors
   }
   Wire.begin(twiAddress);
   Wire.onReceive(receiveFromMaster);

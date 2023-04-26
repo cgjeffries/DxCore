@@ -17,16 +17,16 @@ void setup() {
 }
 
 void loop() {
-    da_Serial.println("Inital Analog Read Config:");
+    da_Serial.println("Initial Analog Read Config:");
     printConfigTable(getAnalogReadConfig());
-    
+   
 
     da_Serial.println("Analog Read Config (Set Default):");
     ADCConfig defaultConfig = ADCConfig_default;
     analogReadConfig(defaultConfig);
     printConfigTable(getAnalogReadConfig());
     da_Serial.println("EXPECTED OUTPUT:");
-    da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|", 
+    da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|",
                       0, 120, 10, 20, 0, 0, 14);
     da_Serial.println();
 
@@ -38,13 +38,13 @@ void loop() {
       .prescaler = _prescaler,
       .sampleNum = _sampleNum,
       .sampleDelay = _sampleDelay,
-      .sampleLen = _sampleLen 
+      .sampleLen = _sampleLen
     };
     analogReadConfig(modConfig);
     printConfigTable(getAnalogReadConfig());
     da_Serial.println("EXPECTED OUTPUT:");
-    da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|", 
-                      _convMode, _muxNeg, _resolution, _prescaler, 
+    da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|",
+                      _convMode, _muxNeg, _resolution, _prescaler,
                       _sampleNum, _sampleDelay, _sampleLen);
     da_Serial.println();
 
@@ -54,11 +54,11 @@ void loop() {
   }
 
 void printConfigTable(ADCConfig config) {
-  da_Serial.printf("| %-10s| %-12s| %-12s| %-12s| %-12s| %-12s| %-12s|", 
+  da_Serial.printf("| %-10s| %-12s| %-12s| %-12s| %-12s| %-12s| %-12s|",
   "convMode","muxNeg", "resolution", "prescaler",
   "sampleNum","sampleDelay","sampleLen");
   da_Serial.println();
-  da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|", 
+  da_Serial.printf("| %-10d| %-12d| %-12d| %-12d| %-12d| %-12d| %-12d|",
   config.convMode,config.muxNeg,config.resolution,config.prescaler,
   config.sampleNum,config.sampleDelay,config.sampleLen);
   da_Serial.println();

@@ -2,22 +2,26 @@
 The SPI library implements all of the standard functionality described in the [Arduino SPI library reference](https://www.arduino.cc/en/reference/SPI) applies here. Also, like all of the "big three" third-party cores for post-2016 AVR devices, this version of SPI.h supports the `swap()` and `pins()` methods to make use of the PORTMUX feature of the chips. However, there is an additional complication described below; this has finally been addressed in an (IMO) satisfactory way in 1.3.0.
 
 ## Pins
-| Pin Mapping   | Pins        | Parts      | Swap-level name   |   Synonym  | Value |
-|---------------|-------------|------------|-------------------|------------|-------|
-| SPI0 DEFAULT  | PA4-PA7     | All        | SPI0_SWAP_DEFAULT | SPI0_SWAP0 | 0x00  |
-| SPI0 ALT1     | PE0-PE3     | 48+ pin    | SPI0_SWAP_ALT1    | SPI0_SWAP1 | 0x01  |
-| SPI0 ALT2     | PG4-PG7     | DA/DB 64   | SPI0_SWAP_ALT2    | SPI0_SWAP2 | 0x02  |
-| SPI0 ALT3     | PA0-1,PC0-1 | DD/EA only | SPI0_SWAP_ALT3    | SPI0_SWAP3 | 0x03  |
-| SPI0 ALT4     | PD4-PD7     | DD/EA only | SPI0_SWAP_ALT4    | SPI0_SWAP4 | 0x04* |
-| SPI0 ALT5     | PC0-PC3     | DD/EA only | SPI0_SWAP_ALT5    | SPI0_SWAP5 | 0x05* |
-| SPI0 ALT6     | PC1-PC3,PF7 | DD/EA only | SPI0_SWAP_ALT6    | SPI0_SWAP6 | 0x06* |
-| SPI1 DEFAULT  | PC0-PC3     | DA/DB only | SPI1_SWAP_DEFAULT | SPI1_SWAP0 | 0x80  |
-| SPI1 ALT1     | PC4-PC7     | DA/DB 48/64| SPI1_SWAP_ALT1    | SPI1_SWAP1 | 0x84* |
-| SPI1 ALT2     | PB4-PB7     | DA/DB 64   | SPI1_SWAP_ALT2    | SPI1_SWAP2 | 0x88* |
+| Pin Mapping   | Pins        | Parts           | Swap-level name   |   Synonym  | Value | Note                      |
+|---------------|-------------|-----------------|-------------------|------------|-------|---------------------------|
+| SPI0 DEFAULT  | PA4-PA7     | 20+ pin         | SPI0_SWAP_DEFAULT | SPI0_SWAP0 | 0x00  | Core default `#`        - |
+| SPI0 ALT1     | PE0-PE3     | 48+ pin         | SPI0_SWAP_ALT1    | SPI0_SWAP1 | 0x01  |                         - |
+| SPI0 ALT2     | PG4-PG7     | DA/DB 64        | SPI0_SWAP_ALT2    | SPI0_SWAP2 | 0x02  |                         - |
+| SPI0 ALT3     | PA0-1,PC0-1 | DD28+/EA/EB only| SPI0_SWAP_ALT3    | SPI0_SWAP3 | 0x03  | New mapping DD+ only `*$` |
+| SPI0 ALT4     | PD4-PD7     | DD/EA/EB only   | SPI0_SWAP_ALT4    | SPI0_SWAP4 | 0x04* | New mapping DD+ only `*@` |
+| SPI0 ALT5     | PC0-PC3     | DD/EA/EB only   | SPI0_SWAP_ALT5    | SPI0_SWAP5 | 0x05* | New mapping DD+ only `*$` |
+| SPI0 ALT6     | PC1-PC3,PF7 | DD/EA/EB only   | SPI0_SWAP_ALT6    | SPI0_SWAP6 | 0x06* | New mapping DD+ only `*%` |
+| SPI1 DEFAULT  | PC0-PC3     | DA/DB only      | SPI1_SWAP_DEFAULT | SPI1_SWAP0 | 0x80  | Only DA/DB Have SPI1      |
+| SPI1 ALT1     | PC4-PC7     | DA/DB 48/64     | SPI1_SWAP_ALT1    | SPI1_SWAP1 | 0x84* | Only DA/DB Have SPI1      |
+| SPI1 ALT2     | PB4-PB7     | DA/DB 64        | SPI1_SWAP_ALT2    | SPI1_SWAP2 | 0x88* | Not on 48-pin parts    `!`|
 
-`*` - parts with SPI1 (at least those currently announced) haven't had more than 3 total pin mapping options represented by just 2 bits. The DD-series and EA-series have more complicated mappings. When they release a part with >3 pin options and >1 SPI interface, this library will need to be adjusted, which is why you should always use the names.
-
-SPI0 ALT6 on DD-series parts is clearly to provide a way to get the important SPI lines onto the MVIO pins
+Notes:
+* Parts with SPI1 (at least those currently announced) haven't had more than 3 total pin mapping options represented by just 2 bits. The DD-series and EA-series have more complicated mappings. When they release a part with >3 pin options and >1 SPI interface, this library will need to be adjusted, which is why you should always use the names.
+* `*` Added on DD and later series of parts only.
+* `@`SPI0 ALT4 is the default on 14-pin DD-series, as it is the lowest number they have with all pins.
+* `$` SPI0 ALT5 likely works only on 28+ pin parts with a PC0, but it's not explicitly clear. Keep an eye on DD errata, where the issue with SPI Alt 2 on DA/DB 48 was
+* `%` SPI0 ALT6 on DD-series parts is clearly to provide a way to get the important SPI lines onto the MVIO pins
+* `!` SPI1 ALT2 - apparently - is supposed to be able to limp onwards despite not having SCK or SS pins one the DX-series 48 pin parts. That is supposedly busted. We were way ahead of the errata and never expected it to work.
 
 ## SPI pin swap methods
 `SPI.swap(swap_level)` will set the the mapping to the specified pin swapping level. It will return true if this is a valid option for the part you're using, and false if it is not (you don't need to check this, but it may be useful during development). If an invalid option is specified, it will be set to SPI0 on the default pins.
@@ -34,9 +38,9 @@ As noted above the `SPI_class` object for the second SPI port would have to matc
 
 ### The solution
 However, on reflection - I realized that... does it really even make sense to have two instances of SPI_class?
-1. It is rare to need two physical SPI ports - SPI is a bus, and many parts can share the same MISO, MOSI and SCK pins.
-1. The standard SPI library API does not support slave mode, so the plausible case of a part being both a master to sensors or other simple devices, while something more computing-heavy like a Raspberry Pi controls it over SPI is not an issue. Because SPI.h has nothing to do with SPI slave mode, and another library must be used for that, all that we require of SPI.h in order for it to be no worse than the stock SPI library is that it not interfere with whatever SPI port it isn't using in master mode.
-1. The most compelling reason to make use of the second SPI port and why the original attempt at a second SPI library was such a high priority was due to the highly constrained pin options on the 28-pin and 32-pin parts - only one set of pins is available for each SPI interface. The available pins for SPI0 are PA4-PA7. When those are the only SPI pins available, using SPI becomes mutually exclusive with using some of the most powerful and important pins on the part: There are many useful peripherals limited to those pins and those alone (TCD0 until we get a fix for the errata, and the only option for Serial0 when external clock sources are used, among others). But by simply treating the it was recognized that a single SPI library which could use either of the hardware SPI modules, with any of their pin-swaps would provide most of the end user benefits of multiple SPI instances, while still maintaining compatibility with SPI-using libraries (which is the whole point of a standard SPI library).
+1. It is rare to need two physical SPI ports - SPI is a bus, and many parts can share the same MISO, MOSI and SCK lines.
+1. The standard SPI library API does not support slave mode, so the plausible case of a part being both a master to sensors or other simple devices, while something more computing-heavy like a Raspberry Pi controls it over SPI is not an issue. Because SPI.h has nothing to do with SPI slave mode, and another library must be used for that, all that we require of SPI.h in order for it to be no worse than the stock SPI library is that it leave whichever SPI port it's *not* using alone.
+1. The most compelling reason to make use of the second SPI port and why the original attempt at a second SPI library was such a high priority was due to the highly constrained pin options on the 28-pin and 32-pin parts - only one set of pins is available for each SPI interface. The available pins for SPI0 are PA4-PA7. When those are the only SPI pins available, using SPI becomes mutually exclusive with using some of the most powerful and important pins on the part: There are many useful peripherals limited to those pins and those alone (TCD0 until we get a fix for the errata, and the only option for Serial0 when external clock sources are used, among others). The pins of SPI1 are more convenient - if only you could make SPI.h use those. Once it was recognized that only a single instance was needed to support realistic use cases, the route to implement this was clear, and quite simple - we just have a member variable pointing to either SPI0 or SPI1 that we use in place of the hardcoded references, and set the swap level and the pointer at the same time: since swap level itself it at most 3 bits, so it's not a problem to use the MSB of the swap level to represent the SPI instance, and we have plenty of room to scale this.
 
 As of 1.3.0, the version of SPI.h included with DxCore allows all SPI0 and SPI1 pin mappings to be used via the SPI.swap() and SPI.pins() functions described below. Unlike other peripheral libraries that provide a similar `swap()` method, the SPI library defines constants to pass to `SPI.swap()` - two names for each are shown on the table at the top of this page; the naming of the pin mappings ("DEFAULT", "ALT1", "ALT2") matches what Microchip calls them, and is hence our recommendation. For convenience the numeric values are also listed - though as always, we strongly discourage users from passing numeric values or setting registers to them when named constants are available. Your code is more readable with the constants, and it helps future proof your code.
 
@@ -54,7 +58,9 @@ On the Dx-series parts, the SS pin can be configured to - when driven low -  swi
 This core disables the SS pin when running in SPI master mode. This means that the "SS" pin can be used for whatever purpose you want - unlike classic AVRs, where the "slave-select" functionality of the SS pin could not be disabled (on classic AVRs, if that pin was input, and it went low - SPI was now in slave mode, whether you like it or not! And within Arduino circles "not" was pretty much universal, since SPI.h doesn't support slave mode.
 
 ## Slave implementation
-As noted above, SPI.h does not support SPI slave mode, never has, and never will. While a library to implement this is conceivable, SPI is in fact FAR simpler than I2C/TWI - there are a grand total of 5 registers, including the data register; implementing an SPI slave device can be done comparatively easy by directly configuring the registers, and there has been very little interest on forums in SPI slave devices, and a great deal of interest in I2C slaves. Personally, I think the greatest potential on these parts will come from using SPI slave mode with the part controlling it's own SS and SCK pins by connecting another output pin to them, taking advantage of the SPI shift-register and buffer, as well as one or more CCL blocks to efficiently output interrupt driven, non-SPI protocols. Plans are afoot to use several CCL blocks and event channels, the TCD, and at least one more timer to output neopixel data in the background, rather than monopolizing the CPU for it (particularly when these are overclocked, it starts to get a little absurd, with around 80% of the time it spends sending used in delays)
+As noted above, SPI.h does not support SPI slave mode, never has, and never will. While a library to implement this is conceivable, SPI is in fact FAR simpler than I2C/TWI - there are a grand total of 5 registers, including the data register; implementing an SPI slave device can be done comparatively easy by directly configuring the registers, and there has been very little interest on forums in SPI slave devices, and a great deal of interest in I2C slaves. I believe the reaqson is that SPI is run as speeds so much higher, and provide no mechanism for clock stretching. Within the Arduino paradigm of taking a callback function called within the ISR, there is no way that one can have prayer of meeting relevant timing constraints except at exceedingly low clock speeds. Between the first sign that an
+
+Personally, I think the greatest potential on these parts will come from using SPI slave mode with the part controlling it's own SS and SCK pins by connecting another output pin to them, taking advantage of the SPI shift-register and buffer, as well as one or more CCL blocks to efficiently output interrupt driven, non-SPI protocols. Plans are afoot to use several CCL blocks and event channels, the TCD, and at least one more timer to output neopixel data in the background, rather than monopolizing the CPU for it (particularly when these are overclocked, it starts to get a little absurd, with around 80% of the time it spends sending used in delays); if we could recover a portion of that to use for calculating what to display next, great. If we could calculate what to display during some of that time, huge frame rate improvements are possiblem.
 
 
 ## Note on terminology

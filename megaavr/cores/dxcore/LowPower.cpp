@@ -67,7 +67,7 @@ void sleepSimple(SLPCTRL_SMODE_t sleepMode, bool flushSerial) {
 void RTCSync(){
   while (RTC.STATUS > 0)
   {
-    ;                                   /* Wait for all registers to be synchronized */
+    ;/* Wait for all registers to be synchronized */
   }
 }
 
@@ -76,8 +76,8 @@ void wakeUsingRTC(){
     /* Initialize RTC: */
   RTCSync();
   RTC.CLKSEL = RTC_CLKSEL_OSC1K_gc;  /* 1.024 kHz from OSC32K */
-  RTC.INTCTRL = RTC_OVF_bm;					// enable overflow interrupt
-  RTC.CTRLA = 0 | 0x80 | 1;		// set enabled in standby and enable RTC
+  RTC.INTCTRL = RTC_OVF_bm;                    // enable overflow interrupt
+  RTC.CTRLA = 0 | 0x80 | 1;        // set enabled in standby and enable RTC
 }
 
 //function that scales millis to RTC ticks based on 1024 ticks/sec
@@ -87,12 +87,17 @@ void setRTCPerTime(uint32_t millis){
 }
 
 /*
-We need the ISR for the RTC CNT interrupt here so that we can wake from sleep. Without an ISR, the system will just crash upon getting the interrupt.
-However, ISRs can only be defined in one place and cannot be moved/redefined later on. This means that the user will not be able to define their own ISR
-for the RTC if they wish to do so. To make up for this, we add attachRTCCNTInterrupt(), which takes in a function pointer to a user-defined interrupt handler
-for the RTC CNT interrupt. Upon recieving the interrupt, the ISR will execute the specified function (if it exists), then return back to here to clear the flags
-and do other work that is necessary. In this way the user's ability to use the RTC for other purposes in maintained while still allowing us to always use 
-it for our purposes.
+We need the ISR for the RTC CNT interrupt here so that we can wake from sleep.
+ Without an ISR, the system will just crash upon getting the interrupt. However,
+ ISRs can only be defined in one place and cannot be moved/redefined later on.
+ This means that the user will not be able to define their own ISRfor the RTC
+ if they wish to do so. To make up for this, we add attachRTCCNTInterrupt(),
+ which takes in a function pointer to a user-defined interrupt handler for the
+ RTC CNT interrupt. Upon receiving the interrupt, the ISR will execute the
+ specified function (if it exists), then return back to here to clear the flags
+ and do other work that is necessary. In this way the user's ability to use the
+ RTC for other purposes in maintained while still allowing us to always use it
+ for our purposes.
 */
 volatile voidFuncPtr RTCCNTIntHandler = nullptr;
 
@@ -115,13 +120,13 @@ ISR(RTC_CNT_vect)
 //disable the RTC, that way it won't keep generating interrupts
 void disableRTC(){
   RTCSync();
-  RTC.CTRLA = 0;					// disable RTC
+  RTC.CTRLA = 0;                    // disable RTC
 }
 
 // MALS-92
 /*
-Utilize the Standby sleep mode to emulate the funcitonality of the standard arduino delay() function, at greatly 
-reduced power draw.
+Utilize the Standby sleep mode to emulate the functionality of the standard arduino
+ delay() function, at greatly reduced power draw.
 */
 void delaySleep(uint32_t millis){
   setRTCPerTime(millis);
@@ -374,5 +379,4 @@ void disableAllFloatingPins(bool value) {
 
 // Will be used in a .ino file for the slave microcontroller because Wire.h is too far to get to its folder
 // void sleepUntilTWIMatch(uint8_t address) {
-  
 // }

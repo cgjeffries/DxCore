@@ -4,7 +4,7 @@
  * attachInterrupt() that uses less flash and doesn't assimilate every interrupt vector...
  *
  * The ultimate goal was not achieved, but we can manually force the effect I wanted.
- * Someone with deeper knowledge of how C/C++ decides that it will iclude the ISR from a file
+ * Someone with deeper knowledge of how C/C++ decides that it will include the ISR from a file
  * but it does give *a way* to write code that can use an attachInterrupt library and manually define pin interrupts.
  * thisis important because attachInterrupt interrupts are miserably slow. Even in assembly, it's like 42 clocks to
  * get to the loop, 7+ per pass through it, and a little over 40 more on the way out!
@@ -150,8 +150,10 @@
       "push  r0"         "\n\t" // so we start with a normal prologue
       "in    r0, 0x3f"   "\n\t" // The SREG
       "push  r0"         "\n\t" // on the stack
-      "in    r0, 0x3b"   "\n\t" // RAMPZ
-      "push  r0"         "\n\t" // on the stack.
+      #if PROGMEM_SIZE > 0x10000
+        "in    r0, 0x3b"   "\n\t" // RAMPZ
+        "push  r0"         "\n\t" // on the stack.
+      #endif
       "push  r1"         "\n\t" // We don't need r1 but the C code we call
       "eor   r1, r1"     "\n\t" // is going to want this to be zero....
       "push  r15"        "\n\t" // push r15 (we use it - it's call-saved)
@@ -217,8 +219,10 @@
       "pop   r17"         "\n\t" // skip 16 again - it's way down at the end, because it was pushed earlier
       "pop   r15"         "\n\t"
       "pop   r1"          "\n\t"
-      "pop   r0"          "\n\t"
-      "out   0x3b,  r0"   "\n\t"
+      #if PROGMEM_SIZE > 0x10000
+        "pop   r0"          "\n\t"
+        "out   0x3b,  r0"   "\n\t"
+      #endif
       "pop   r0"          "\n\t"
       "out   0x3f,  r0"   "\n\t" // between these is where there had been stuff added to the stack that we flushed.
       "pop   r0"          "\n\t"
@@ -360,11 +364,11 @@
     asm volatile(
       "push r16"      "\n\t"
       "ldi r16, 0"    "\n\t"
-#if PROGMEM_SIZE > 8192
-      "jmp AttachedISR" "\n\t"
-#else
-      "rjmp AttachedISR" "\n\t"
-#endif
+      #if PROGMEM_SIZE > 8192
+        "jmp AttachedISR" "\n\t"
+      #else
+        "rjmp AttachedISR" "\n\t"
+      #endif
       ::);
     __builtin_unreachable();
     }
@@ -373,32 +377,39 @@
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 2"    "\n\t"
-#if PROGMEM_SIZE > 8192
-        "jmp AttachedISR" "\n\t"
-#else
-        "rjmp AttachedISR" "\n\t"
-#endif
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
         ::);
       __builtin_unreachable();
     }
     #endif
-    #ifdef PORTC_PINS
+    #ifdef PORTC
       ISR(PORTC_PORT_vect, ISR_NAKED) {
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 4"    "\n\t"
-#if PROGMEM_SIZE > 8192
-        "jmp AttachedISR" "\n\t"
-#else
-        "rjmp AttachedISR" "\n\t"
-#endif
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
+        ::);
+      __builtin_unreachable();
+    }
     #endif
     #ifdef PORTD
       ISR(PORTD_PORT_vect, ISR_NAKED){
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 6"    "\n\t"
-        "jmp AttachedISR" "\n\t"
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
         ::);
       __builtin_unreachable();
     }
@@ -408,7 +419,11 @@
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 8"    "\n\t"
-        "jmp AttachedISR" "\n\t"
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
         ::);
       __builtin_unreachable();
     }
@@ -418,7 +433,11 @@
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 10"    "\n\t"
-        "jmp AttachedISR" "\n\t"
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
         ::);
       __builtin_unreachable();
     }
@@ -428,7 +447,11 @@
       asm volatile(
         "push r16"      "\n\t"
         "ldi r16, 12"    "\n\t"
-        "jmp AttachedISR" "\n\t"
+        #if PROGMEM_SIZE > 8192
+          "jmp AttachedISR" "\n\t"
+        #else
+          "rjmp AttachedISR" "\n\t"
+        #endif
         ::);
       __builtin_unreachable();
     }

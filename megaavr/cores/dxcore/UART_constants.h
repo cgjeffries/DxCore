@@ -114,9 +114,10 @@
 /* Modifier Definitions  - these can be OR'ed with the other definition to turn on features like one-wire half duplex and more */
 #if defined(USART_RS485_0_bm) || defined(USART_RS4850_bm)
   #define SERIAL_RS485         (((uint16_t) USART_RS485_0_bm) << 8)// 0x0100
-  #define SERIAL_RS485_OTHER   (((uint16_t) USART_RS485_1_bm) << 8)// 0x0200 tinyAVR 0/1 - that wacky, other RS485 mode.
+  #define SERIAL_RS485_OTHER   (((uint16_t) USART_RS485_1_bm) << 8)// 0x0200 tinyAVR 0/1
 #else
   #define SERIAL_RS485         (((uint16_t) USART_RS485_bm)  << 8)// 0x0100
+  #define SERIAL_RS485_OTHER   (((uint16_t) USART_RS485_bm)  << 9)// 0x0200
 #endif
 #define   SERIAL_OPENDRAIN      ((uint16_t)                 0x0400)// 0x0400
 #define   SERIAL_LOOPBACK      (((uint16_t) USART_LBME_bm)    << 8)// 0x0800

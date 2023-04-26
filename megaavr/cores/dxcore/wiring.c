@@ -37,124 +37,258 @@ void init_timers();
   #error "CLOCK_SOURCE not defined. Must be 0 for internal, 1 for crystal, or 2 for external clock"
 #endif
 
-/* Even when millis is off, we should still have access to the clock cycle counting maqcros.
- * That's the only way ww can get time estimates there! */
-inline uint16_t clockCyclesPerMicrosecond() {
-  return ((F_CPU) / 1000000L);
-}
+#if (defined(MILLIS_USE_TIMERA0) || defined(MILLIS_USE_TIMERA1))
+  #define MILLIS_USE_TCA
+#endif
 
-inline unsigned long clockCyclesToMicroseconds(unsigned long cycles) {
-  return (cycles / clockCyclesPerMicrosecond());
-}
+#if (defined(MILLIS_USE_TIMERB0) || defined(MILLIS_USE_TIMERB1) || defined(MILLIS_USE_TIMERB2) || defined(MILLIS_USE_TIMERB3) || defined(MILLIS_USE_TIMERB4))
+  #define MILLIS_USE_TCB
+#endif
 
-inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
-  return (microseconds * clockCyclesPerMicrosecond());
-}
+#if (defined(MILLIS_USE_TIMERD0))
+  #define MILLIS_USE_TCD
+#endif
+
+
+
 
 #ifndef MILLIS_USE_TIMERNONE /* If millis is enabled, we need to provide it millis() and micros() */
 
-  #if (defined(MILLIS_USE_TIMERB0) || defined(MILLIS_USE_TIMERB1) || defined(MILLIS_USE_TIMERB2) || defined(MILLIS_USE_TIMERB3) || defined(MILLIS_USE_TIMERB4)) // TCB as millis source does not need fraction
-    volatile uint32_t timer_millis = 0; // That's all we need to track here
-  #elif !defined(MILLIS_USE_TIMERRTC) // non-RTC non-TCB millis stuff - TCA, or potentially TCD in the future.
-    // all of this stuff is not used when the RTC is used as the timekeeping timer, but that never happens on DxCore.
-    static uint16_t timer_fract = 0;
-    uint16_t fract_inc;
-    volatile uint32_t timer_millis = 0;
-    #define FRACT_MAX  (1000)
-    #define FRACT_INC  (clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF) % 1000);
-    #define MILLIS_INC (clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF) / 1000);
-    volatile uint32_t timer_overflow_count = 0;
-  #else // RTC millis stuff
-    volatile uint16_t timer_overflow_count = 0;
-  #endif
+  // volatile uint16_t microseconds_per_timer_overflow;
+  // volatile uint16_t microseconds_per_timer_tick;
+  // overflow count is tracked for all timer options, even the RTC
+  struct sTimer {
+    uint8_t            intClear;
+    volatile uint8_t  *intStatusReg;
+  };
 
-  // overflow count is tracked for all timer options, even the RTC, except for TCBs where it is equal to millis.
-  #if !defined(MILLIS_USE_TIMERRTC)
-    #if defined(MILLIS_USE_TIMERD0)
-      #if !defined(TCD0)
-        #error "Selected millis timer, TCD0, does not exist on this part"
-      #else
-        #error "Selected millis timer, TCD0, is not supported on DxCore as a millis timekeeping source"
-      #endif
-    #elif !defined(MILLIS_USE_TIMERA0) && !defined(MILLIS_USE_TIMERA1)
-      static volatile TCB_t* _timer =
-      #if defined(MILLIS_USE_TIMERB0)
-        &TCB0;
-      #elif defined(MILLIS_USE_TIMERB1)
-        #ifndef TCB1
-          #error "Selected millis timer, TCB1 does not exist on this part."
-        #endif
-        &TCB1;
-      #elif defined(MILLIS_USE_TIMERB2)
-        #ifndef TCB2
-          #error "Selected millis timer, TCB2 does not exist on this part."
-        #endif
-        &TCB2;
-      #elif defined(MILLIS_USE_TIMERB3)
-        #ifndef TCB3
-          #error "Selected millis timer, TCB3 does not exist on this part."
-        #endif
-        &TCB3;
-      #elif defined(MILLIS_USE_TIMERB4)
-        #ifndef TCB4
-          #error "Selected millis timer, TCB4 does not exist on this part."
-        #endif
-        &TCB4;
-      #else  // it's not TCB0, TCB1, TCD0, TCA0, TCA1, or RTC
-        #error "No millis timer selected, but not disabled - can't happen!".
-      #endif
-    #else
-      #if !defined(TCA1) && defined(MILLIS_USE_TIMERA1)
-        #error "Selected millis timer, TCA1 does not exist on this part."
-      #endif
-    #endif
-  #endif // end #if !defined(MILLIS_USE_TIMERRTC)
-
-  // Millis ISR:
-  #if defined(MILLIS_USE_TIMERA0)
-    ISR(TCA0_HUNF_vect)
-  #elif defined(MILLIS_USE_TIMERA1)
-    ISR(TCA1_HUNF_vect)
-  #elif defined(MILLIS_USE_TIMERD0)
-    ISR(TCD0_OVF_vect)
-  #elif defined(MILLIS_USE_TIMERRTC)
-    ISR(RTC_CNT_vect)
-  #elif defined(MILLIS_USE_TIMERB0)
-    ISR(TCB0_INT_vect)
-  #elif defined(MILLIS_USE_TIMERB1)
-    #ifndef TCB1
-      #error "Selected millis timer, TCB1 does not exist on this part."
-    #endif
-    &TCB1;
-  #elif defined(MILLIS_USE_TIMERB2)
-    #ifndef TCB2
-      #error "Selected millis timer, TCB2 does not exist on this part."
-    #endif
-    &TCB2;
-  #elif defined(MILLIS_USE_TIMERB3)
-    #ifndef TCB3
-      #error "Selected millis timer, TCB3 does not exist on this part."
-    #endif
-    &TCB3;
-  #elif defined(MILLIS_USE_TIMERB4)
-    ISR(TCB4_INT_vect)
+  #if defined(MILLIS_USE_TIMERRTC)
+    // this is done for us in timers.h
+    // #define MILLIS_VECTOR (RTC_CNT_vect)
+    const struct sTimer _timerS = {RTC_OVF_bm, &RTC.INTCTRL};
   #else
-    #error "no millis timer selected"
-  #endif
-  {
+    #if defined (MILLIS_USE_TIMERA0)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCA0_HUNF_vect)
+      const struct sTimer _timerS = {TCA_SPLIT_HUNF_bm,  &TCA0.SPLIT.INTFLAGS};
 
-    // copy these to local variables so they can be stored in registers
-    // (volatile variables must be read from memory on every access)
-    #if (defined(MILLIS_USE_TIMERB0) || defined(MILLIS_USE_TIMERB1) || defined(MILLIS_USE_TIMERB2) || defined(MILLIS_USE_TIMERB3) || defined(MILLIS_USE_TIMERB4))
-      #if(F_CPU>1000000)
-        timer_millis++; // that's all we need to do!
-      #else // if it's 1<Hz, we set the millis timer to only overflow every 2 milliseconds, intentionally sacrificing resolution.
-        timer_millis += 2;
-      #endif
+    #elif defined (MILLIS_USE_TIMERA1)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCA1_HUNF_vect)
+      const struct sTimer _timerS = {TCA_SPLIT_HUNF_bm,  &TCA1.SPLIT.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERB0)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCB0_INT_vect)
+      static volatile TCB_t *_timer = &TCB0;
+      const struct sTimer _timerS = {TCB_CAPT_bm, &TCB0.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERB1)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCB1_INT_vect)
+      static volatile TCB_t *_timer = &TCB1;
+      const struct sTimer _timerS = {TCB_CAPT_bm, &TCB1.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERB2)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCB2_INT_vect)
+      static volatile TCB_t *_timer = &TCB2;
+      const struct sTimer _timerS = {TCB_CAPT_bm, &TCB2.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERB3)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCB3_INT_vect)
+      static volatile TCB_t *_timer = &TCB3;
+      const struct sTimer _timerS = {TCB_CAPT_bm, &TCB3.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERB4)
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCB4_INT_vect)
+      static volatile TCB_t *_timer = &TCB4;
+      const struct sTimer _timerS = {TCB_CAPT_bm, &TCB4.INTFLAGS};
+
+    #elif defined(MILLIS_USE_TIMERD0)
+      /*
+      // this is done for us in timers.h
+      // #define MILLIS_VECTOR (TCD0_OVF_vect)
+      const struct sTimer _timerS = {TCD_OVF_bm, &TCD0.INTFLAGS};
+      */
+      #error "TCD0 is not a supported timing source on the Dx-series; the greater number of possible configurations of the clock make it even more unwieldy. "
     #else
-      #if !defined(MILLIS_USE_TIMERRTC) // TCA0 or TCD0
-        uint32_t m = timer_millis;
-        uint16_t f = timer_fract;
+      #error "No millis timer selected, but not disabled - can't happen!".
+    #endif  /* defined(MILLIS_USE_TIMER__) */
+  #endif  /* defined(MILLIS_USE_TIMERRTC) */
+
+  #define FRACT_MAX (1000)
+  #define FRACT_INC (millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)%1000)
+  #define MILLIS_INC (millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)/1000)
+
+  struct sTimeMillis {
+    #if defined(MILLIS_USE_TCB)     // Now TCB as millis source does not need fraction
+      volatile uint32_t timer_millis;   // That's all we need to track here
+
+    #elif defined(MILLIS_USE_TIMERRTC)  // RTC
+      volatile uint16_t timer_overflow_count;
+    #else                               // TCAx or TCD0
+      volatile uint16_t timer_fract;
+      volatile uint32_t timer_millis;
+      volatile uint32_t timer_overflow_count;
+
+    #endif
+  } timingStruct;
+
+  // Now for the ISRs. This gets a little bit more interesting now...
+  #if defined (MILLIS_USE_TIMERRTC)
+    ISR(MILLIS_VECTOR) {
+      // if RTC is used as timer, we only increment the overflow count
+      // Overflow count isn't used for TCB's
+      if (RTC.INTFLAGS & RTC_OVF_bm) {
+        timingStruct.timer_overflow_count++;
+      }
+      RTC.INTFLAGS = RTC_OVF_bm | RTC_CMP_bm; // clear flag
+    }
+  #else
+    ISR(MILLIS_VECTOR, ISR_NAKED) {
+      __asm__ __volatile__(
+      "push       r30"          "\n\t" // First we make room for the pointer to timingStruct by pushing the Z registers
+      "push       r31"          "\n\t" //
+      ::);
+    #if defined(MILLIS_USE_TCB)
+      __asm__ __volatile__(
+      "push       r24"            "\n\t" // we only use two register other than the pointer
+      "in         r24,     0x3F"  "\n\t" // Need to save SREG too
+      "push       r24"            "\n\t" // and push the SREG value  - 7 clocks here + the 5-6 to enter the ISR depending on flash and sketch size, 12-13 total
+      "ld         r24,        Z"  "\n\t" // Z points to LSB of timer_millis, load the LSB
+    #if (F_CPU > 2000000)                // if it's 1 or 2 MHz, millis timer overflows every 2ms, intentionally sacrificing resolution for reduced time spent in ISR
+      "subi       r24,     0xFF"  "\n\t" // sub immediate 0xFF is the same as to add 1. (There is no add immediate instruction, except add immediate to word)
+    #else
+      "subi       r24,     0xFE"  "\n\t" // sub immediate 0xFE is the same as to add 2
+    #endif
+      "st           Z,      r24"  "\n\t" // Store incremented value back to Z
+      "ldd        r24,      Z+1"  "\n\t" // now load the next higher byte
+      "sbci       r24,     0xFF"  "\n\t" // because this is sbci, it treats carry bit like subtraction, and unless we did just roll over with the last byte,
+      "std        Z+1,      r24"  "\n\t" // carry will be cleared. Thus, sbci 0xFF after a subi pressed into service to add, is the same as adc r1 after an add
+      "ldd        r24,      Z+2"  "\n\t" // which is what we want.
+      "sbci       r24,     0xFF"  "\n\t" // This gets repeated...
+      "std        Z+2,      r24"  "\n\t" //
+      "ldd        r24,      Z+3"  "\n\t" //
+      "sbci       r24,     0xFF"  "\n\t" //
+      "std        Z+3,      r24"  "\n\t" // ... until all 4 bytes were handled, at 4 clocks and 3 words per byte -> 16 clocks
+      "ldi        r24, %[CLRFL]"  "\n\t" // This is the TCB interrupt clear bitmap
+      "sts   %[PTCLR],      r24"  "\n\t" // write to Timer interrupt status register to clear flag. 2 clocks for sts
+      "pop        r24"            "\n\t" // pop r24 to get the old SREG value - 2 clock
+      "out       0x3F,      r24"  "\n\t" // restore SREG - 1 clock
+      "pop        r24"            "\n\t"
+      "pop        r31"            "\n\t"
+      "pop        r30"            "\n\t" // 6 more clocks popping registers in reverse order.
+      "reti"                      "\n\t" // and 4 clocks for reti - total 12/13 + 16 + 2 + 1 + 6 + 4 = 41/42 clocks total, and 7+16+3+6 = 32 words, vs 60-61 clocks and 40 words
+      :: "z" (&timingStruct.timer_millis),   // we are changing the value of "Z", so to be strictly correct, this must be declared input output - though in this case it doesn't matter
+         [CLRFL] "M" (_timerS.intClear),
+         [PTCLR] "m" (*_timerS.intStatusReg)
+      ); // grrr, sublime highlights this as invalid syntax because it gets confused by the ifdef's and odd syntax on inline asm
+      /* ISR in C:
+        ISR (TCBx_INT_vect) {       // x depends on user configuration
+          #if (F_CPU > 2000000)
+            timer_millis += 1;
+          #else
+            timer_millis += 2;
+          #endif
+          _timer->INTFLAGS = TCB_CAPT_bm;   // reset Interrupt flag of TCBx
+        }
+      */
+    #else // TCA0 or TCD0, also naked
+      __asm__ __volatile__(
+      // ISR prologue (overall 9 words / 9 clocks):
+      "push       r24"            "\n\t" // we use three more registers other than the pointer
+      "in         r24,     0x3F"  "\n\t" // Need to save SREG too
+      "push       r24"            "\n\t" // and push the SREG value
+      "push       r25"            "\n\t" // second byte
+      "push       r23"            "\n\t" // third byte
+      // timer_fract handling (13 words / 15/16 clocks):
+      "ldi        r23, %[MIINC]"  "\n\t" // load MILLIS_INC. (part of timer_millis handling)
+      "ld         r24,        Z"  "\n\t" // lo8(timingStruct.timer_fract).
+      "ldd        r25,      Z+1"  "\n\t" // hi8(timingStruct.timer_fract)
+      "subi       r24,%[LFRINC]"  "\n\t" // use (0xFFFF - FRACT_INC) and use the lower and higher byte to add by subtraction
+      "sbci       r25,%[HFRINC]"  "\n\t" // can't use adiw since FRACT_INC might be >63
+      "st         Z,        r24"  "\n\t" // lo8(timingStruct.timer_fract)
+      "std        Z+1,      r25"  "\n\t" // hi8(timingStruct.timer_fract)
+      "subi       r24,%[LFRMAX]"  "\n\t" // subtract FRACT_MAX and see if it is lower
+      "sbci       r25,%[HFRMAX]"  "\n\t" //
+      "brlo               lower"  "\n\t" // skip next three instructions if it was lower
+      "st         Z,        r24"  "\n\t" // Overwrite the just stored value with the decremented value
+      "std        Z+1,      r25"  "\n\t" // seems counter-intuitive, but it requires less registers
+      "subi       r23,     0xFF"  "\n\t" // increment the MILLIS_INC by one, if FRACT_MAX was reached
+      "lower:"                    "\n\t" // land here if fract was lower then FRACT_MAX
+      // timer_millis handling (13 words / 17 clocks):
+      "ldd        r25,      Z+2"  "\n\t" // lo16.lo8(timingStruct.timer_millis)
+      "add        r25,      r23"  "\n\t" // add r23 to r25. r23 depends on MILLIS_INC and if FRACT_MAX was reached
+      "std        Z+2,      r25"  "\n\t" //
+      "ldi        r24,     0x00"  "\n\t" // get a 0x00 to adc with. Problem: can't subi 0x00 without losing the carry
+      "ldd        r25,      Z+3"  "\n\t" // lo16.hi8(timingStruct.timer_millis)
+      "adc        r25,      r24"  "\n\t" //
+      "std        Z+3,      r25"  "\n\t" //
+      "ldd        r25,      Z+4"  "\n\t" // hi16.lo8(timingStruct.timer_millis)
+      "adc        r25,      r24"  "\n\t" //
+      "std        Z+4,      r25"  "\n\t" //
+      "ldd        r25,      Z+5"  "\n\t" // hi16.hi8(timingStruct.timer_millis)
+      "adc        r25,      r24"  "\n\t" //
+      "std        Z+5,      r25"  "\n\t" //
+      // timer_overflow_count handling (12 words / 16 clocks):
+      "ldd        r25,      Z+6"  "\n\t" // lo16.lo8(timingStruct.timer_overflow_count)
+      "subi       r25,     0xFF"  "\n\t" //
+      "std        Z+6,      r25"  "\n\t" //
+      "ldd        r25,      Z+7"  "\n\t" // lo16.hi8(timingStruct.timer_overflow_count)
+      "sbci       r25,     0xFF"  "\n\t" //
+      "std        Z+7,      r25"  "\n\t" //
+      "ldd        r25,      Z+8"  "\n\t" // hi16.lo8(timingStruct.timer_overflow_count)
+      "sbci       r25,     0xFF"  "\n\t" //
+      "std        Z+8,      r25"  "\n\t" //
+      "ldd        r25,      Z+9"  "\n\t" // hi16.hi8(timingStruct.timer_overflow_count)
+      "sbci       r25,     0xFF"  "\n\t" //
+      "std        Z+9,      r25"  "\n\t" //
+      // timer interrupt flag reset handling (3 words / 3 clocks):
+      "ldi        r24, %[CLRFL]"  "\n\t" // This is the TCx interrupt clear bitmap
+      "sts   %[PTCLR],      r24"  "\n\t" // write to Timer interrupt status register to clear flag. 2 clocks for sts
+      // ISR epilogue (8 words / 17/18 clocks):
+      "pop        r23"            "\n\t"
+      "pop        r25"            "\n\t"
+      "pop        r24"            "\n\t" // pop r24 to get the old SREG value - 2 clock
+      "out       0x3F,      r24"  "\n\t" // restore SREG - 1 clock
+      "pop        r24"            "\n\t"
+      "pop        r31"            "\n\t"
+      "pop        r30"            "\n\t"
+      "reti"                      "\n\t" // total 77 - 79 clocks total, and 58 words, vs 104-112 clocks and 84 words
+      :: "z" (&timingStruct),            // we are changing the value of "Z", so to be strictly correct, this must be declared input output - though in this case it doesn't matter
+        [LFRINC] "M" (((0x0000 - FRACT_INC)    & 0xFF)),
+        [HFRINC] "M" (((0x0000 - FRACT_INC)>>8 & 0xFF)),
+        [LFRMAX] "M" ((FRACT_MAX    & 0xFF)),
+        [HFRMAX] "M" ((FRACT_MAX>>8 & 0xFF)),
+        [MIINC]  "M" (MILLIS_INC),
+        [CLRFL]  "M" (_timerS.intClear),
+        [PTCLR]  "m" (*_timerS.intStatusReg)
+      );
+
+      /* ISR ASM logic written out in C:
+        // timer_fract handling:
+        uint8_t temp = MILLIS_INC;
+        uint16_t f = timingStruct.timer_fract;
+        f -= 0xFFFF;
+        timingStruct.timer_fract = f;
+        f -= FRACT_MAX;
+        if (f > FRACT_MAX) {
+          timingStruct.timer_fract = f;
+          temp++;
+        }
+        // timer_millis handling:
+        timingStruct.timer_millis += temp;
+        // timer_overflow_count handling:
+        timingStruct.timer_overflow_count -= 0xFFFFFFFF;
+        // timer interrupt flag reset handling:
+        *_timerS.intStatusReg = _timerS.intClear;
+      */
+      /* old ISR C code:
+        uint32_t m = timingStruct.timer_millis;
+        uint16_t f = timingStruct.timer_fract;
         m += MILLIS_INC;
         f += FRACT_INC;
         if (f >= FRACT_MAX) {
@@ -162,162 +296,199 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
           f -= FRACT_MAX;
           m += 1;
         }
-        timer_fract = f;
-        timer_millis = m;
-      #endif
-      // if RTC is used as timer, we only increment the overflow count
-      timer_overflow_count++;
-    #endif
-  /* Clear flag */
-    #if defined(MILLIS_USE_TIMERA0)
-      TCA0.SPLIT.INTFLAGS = TCA_SPLIT_HUNF_bm;
-    #elif defined(MILLIS_USE_TIMERD0)
-      TCD0.INTFLAGS = TCD_OVF_bm;
-    #elif defined(MILLIS_USE_TIMERRTC)
-      RTC.INTFLAGS = RTC_OVF_bm | RTC_CMP_bm;
-    #else // timerb
-      _timer->INTFLAGS = TCB_CAPT_bm;
-    #endif
-  }
+        timingStruct.timer_fract = f;
+        timingStruct.timer_millis = m;
+        timingStruct.timer_overflow_count++;
+        *_timerS.intStatusReg = _timerS.intClear;
+      */
+    #endif /* defined(MILLIS_USE_TCB) */
+    }
+  #endif /* defined (MILLIS_USE_TIMERRTC)*/
 
-/*  Both millis and micros must take great care to prevent any kind of backward time travel.
- *
- * These values are unsigned, and should not decrease, except when they overflow. Hence when
- * we compare a value with what we recorded previously and find the new value to be lower, it
- * looks the same as it would 2^32 (4.2 billion) intervals in the future. Timeouts end prematurely
- * and similar undesired behaviors occur.
- *
- * There are three hazardous things we read here:
- * timer_millis, timer_overflow_count, and the timer count itself (TCxn.CNT).
- * The normal variables need only be read with interrupts disabled, in case of an
- * interrupt writing to it while we were reading it. AVRs are little-endian, so this would result
- * in the low byte being read before the overflow and the high byte after, and hence a value
- * higher than it should be for that call. Subsequent calls would return the right value.
- *
- * In the case of the timer value, it is more complicated.
- * Here, the hardware at first glance seems to protect us (see "reading 16-bit registers" in the
- * datasheet). But the register gets read in the interrupt, so we still need those disabled.
- * There is an additional risk though that we get a value from after the timer has overflowed
- * and since we disabled interrupts, the interrupt hasn't updated the overflow. We check the
- * interrupt flag, and if it's set, we check whether the timer value we read was near overflow
- * (the specifics vary by the timer - they're very different timers). If it isn't close to overflow
- * but the flag is set, we must have read it after the overflow, so we compensate for the missed
- * interrupt. If interrupts are disabled for long enough, this heuristic will be wrong, but in
- * that case it is the user's fault, as this limitation is widely known and documentedm, as well
- * as unavoidable. Failure to compensate looks like the inverse of the above case.
- *
- * (note that only micros reads the timer, and hence, only micros can experience backwards time
- * travel due to interrupts being left disabled for too long, millis will just stop increasing.
- *
- * Both of these cause severe breakage everywhere. The first type is simple to avoid, but if
- * missed can be more subtle, since it makes a big difference only if the byte where the read
- * was interrupted rolled over. The second type is more obvious, potentially happening on every timer
- * overflow, instead of just every 256th timer overflow, and when it does happen, anything waiting
- * for a specific number of microseconds to pass that gets that value will do so.
- * Though (see delay below) each incidence only short-circuits one ms of delay(), not the whole
- * thing.
- *
- * All time time travel except for glitchs from disabling millis for too long should no longer
- * be possible. If they are, that is a critical bug.
- */
 
-  unsigned long millis()
-  {
+  /*  Both millis and micros must take great care to prevent any kind of backward time travel.
+   *
+   * These values are unsigned, and should not decrease, except when they overflow. Hence when
+   * we compare a value with what we recorded previously and find the new value to be lower, it
+   * looks the same as it would 2^32 (4.2 billion) intervals in the future. Timeouts end prematurely
+   * and similar undesired behaviors occur.
+   *
+   * There are three hazardous things we read here:
+   * timer_millis, timer_overflow_count, and the timer count itself (TCxn.CNT).
+   * The normal variables need only be read with interrupts disabled, in case of an
+   * interrupt writing to it while we were reading it. AVRs are little-endian, so this would result
+   * in the low byte being read before the overflow and the high byte after, and hence a value
+   * higher than it should be for that call. Subsequent calls would return the right value.
+   *
+   * In the case of the timer value, it is more complicated.
+   * Here, the hardware at first glance seems to protect us (see "reading 16-bit registers" in the
+   * datasheet). But the register gets read in the interrupt, so we still need those disabled.
+   * There is an additional risk though that we get a value from after the timer has overflowed
+   * and since we disabled interrupts, the interrupt hasn't updated the overflow. We check the
+   * interrupt flag, and if it's set, we check whether the timer value we read was near overflow
+   * (the specifics vary by the timer - they're very different timers). If it isn't close to overflow
+   * but the flag is set, we must have read it after the overflow, so we compensate for the missed
+   * interrupt. If interrupts are disabled for long enough, this heuristic will be wrong, but in
+   * that case it is the user's fault, as this limitation is widely known and documentedm, as well
+   * as unavoidable. Failure to compensate looks like the inverse of the above case.
+   *
+   * (note that only micros reads the timer, and hence, only micros can experience backwards time
+   * travel due to interrupts being left disabled for too long, millis will just stop increasing.
+   *
+   * Both of these cause severe breakage everywhere. The first type is simple to avoid, but if
+   * missed can be more subtle, since it makes a big difference only if the byte where the read
+   * was interrupted rolled over. The second type is more obvious, potentially happening on every timer
+   * overflow, instead of just every 256th timer overflow, and when it does happen, anything waiting
+   * for a specific number of microseconds to pass that gets that value will do so.
+   * Though (see delay below) each incidence only short-circuits one ms of delay(), not the whole
+   * thing.
+   *
+   * All time time travel except for glitchs from disabling millis for too long should no longer
+   * be possible. If they are, that is a critical bug.
+   */
+
+
+  unsigned long millis() {
+    // return timer_overflow_count; // for debugging timekeeping issues where these variables are out of scope from the sketch
     unsigned long m;
     // disable interrupts while we read timer_millis or we might get an
     // inconsistent value (e.g. in the middle of a write to timer_millis)
     uint8_t oldSREG = SREG;
     cli();
     #if defined(MILLIS_USE_TIMERRTC)
-      m = timer_overflow_count;
-      if (RTC.INTFLAGS & RTC_OVF_bm) { // there has just been an overflow that hasn't been accounted for by the interrupt
-        m++;
+      uint16_t rtccount = RTC.CNT;
+      m = timingStruct.timer_overflow_count;
+      if (RTC.INTFLAGS & RTC_OVF_bm) {
+        /* There has just been an overflow that hasn't been accounted for by the interrupt. Check if the high bit of counter is set.
+         * We just basically need to make sure that it didn't JUST roll over at the last couple of clocks. But this merthod is
+         * implemented very efficiently (just an sbrs) so it is more efficient than other approaches. If user code is leaving
+         * interrupts off nearly 30 seconds, they shouldn't be surprised. */
+        if (!(rtccount & 0x8000)) m++;
       }
       SREG = oldSREG;
       m = (m << 16);
-      m += RTC.CNT;
-      // now correct for there being 1000ms to the second instead of 1024
-      m = m - (m >> 5) - (m >> 6);
+      m += rtccount;
+      m = m - (m >> 5) + (m >> 7);
+      /* the compiler is incorrigible - it cannot be convinced not to copy m twice, shifting one 7 times and the other 5 times
+       * and wasting 35 clock cycles and several precious instruction words.
+       * What you want is for it to make one copy of m, shift it right 5 places, subtract, then rightshift it 2 more.
+       */
+      /* Would this work?
+      uint32_t temp;
+      uint8_t cnt;
+      __asm__ __volatile__ (
+        "movw %A1, %A0     \n\t"
+        "movw %C1, %C0     \n\t" //make our copy
+        "ldi %2, 5"       "\n\t"
+        "lsr %D1"         "\n\t"
+        "ror %C1"         "\n\t"
+        "ror %B1"         "\n\t"
+        "ror %A1"         "\n\t"
+        "dec %2"          "\n\t"
+        "brne .-12"       "\n\t"
+        "sub %A0, %A1"    "\n\t"
+        "subc %B0, %B1"   "\n\t"
+        "subc %C0, %C1"   "\n\t"
+        "subc %D0, %D1"   "\n\t"
+        "ldi %2, 2"       "\n\t"
+        "lsr %D1"         "\n\t"
+        "ror %C1"         "\n\t"
+        "ror %B1"         "\n\t"
+        "ror %A1"         "\n\t"
+        "dec %2"          "\n\t"
+        "brne .-12"       "\n\t"
+        "add %A0, %A1"    "\n\t"
+        "adc %B0, %B1"    "\n\t"
+        "adc %C0, %C1"    "\n\t"
+        "adc %D0, %D1"    "\n\t"
+        : "+r" (m), "+r" (temp), "+d" (cnt)
+        );
+      */
     #else
-      m = timer_millis;
+      m = timingStruct.timer_millis;
       SREG = oldSREG;
     #endif
     return m;
   }
 
-  #ifndef MILLIS_USE_TIMERRTC
+
+  #if !defined(MILLIS_USE_TIMERRTC)
     unsigned long micros() {
-      unsigned long overflows, microseconds;
-      #if !defined(MILLIS_USE_TIMERA0) && !defined(MILLIS_USE_TIMERA1)
+      uint32_t overflows, microseconds;
+      #if (defined(MILLIS_USE_TCD) || defined(MILLIS_USE_TCB))
         uint16_t ticks;
-      #else
+      #else /* TCA */
         uint8_t ticks;
       #endif
       uint8_t flags;
       /* Save current state and disable interrupts */
       uint8_t oldSREG = SREG;
-      cli();
-      /* Get current timer count and check for OVF flag
-       * Do this ASAP after disabling interrupts     */
+      cli(); /* INTERRUPTS OFF */
       #if defined(MILLIS_USE_TIMERA0)
         ticks = TCA0.SPLIT.HCNT;
         flags = TCA0.SPLIT.INTFLAGS;
+
       #elif defined(MILLIS_USE_TIMERA1)
         ticks = TCA1.SPLIT.HCNT;
         flags = TCA1.SPLIT.INTFLAGS;
-      #elif defined(MILLIS_USE_TIMERD0)
+        /*
+      #elif defined(MILLIS_USE_TCD)
         TCD0.CTRLE = TCD_SCAPTUREA_bm;
         while (!(TCD0.STATUS & TCD_CMDRDY_bm)); // wait for sync - should be only one iteration of this loop
         flags = TCD0.INTFLAGS;
         ticks = TCD0.CAPTUREA;
-      #else
+        */
+      #else /* = defined(MILLIS_USE_TCB) */
         ticks = _timer->CNT;
         flags = _timer->INTFLAGS;
       #endif // end getting ticks
       /* If the timer overflow flag is raised, and the ticks we read are low, then the timer has rolled over but
        * ISR has not fired. If we already read a high value of ticks, either we read it just before the overflow,
-       * so we shouldn't increment overflows, or interrupts are disabled and have been for a while, so
-       * micros isn't expected to work so it doesn't matter.
-       * Next, get the current number of overflows
-       */
-      #if defined(MILLIS_USE_TIMERA0) || defined(MILLIS_USE_TIMERA1) || defined(MILLIS_USE_TIMERD0)
-        overflows = timer_overflow_count;
+       * so we shouldn't increment overflows, or interrupts are disabled and micros isn't expected to work so it
+       * doesn't matter.
+       * Get current number of overflows and timer count */
+      #if defined(MILLIS_USE_TCB)
+        overflows = timingStruct.timer_millis;
       #else
-        overflows = timer_millis;
+        overflows = timingStruct.timer_overflow_count;
       #endif
-
       /* Turn interrupts back on, assuming they were on when micros was called. */
-      SREG = oldSREG;
-
-      // Check if there was just an overflow which didn't happen after we entered the function
+      SREG = oldSREG; /* INTERRUPTS ON */
+      /*
       #if defined(MILLIS_USE_TIMERD0)
-        if ((flags & TCD_OVF_bm) && (ticks < 0x1E0)) { // ticks is 0-509  and it doesn't take 29 ticks between when we disabled interrupts and when we grab the values.
-          overflows++;
-        }
-      #elif defined(MILLIS_USE_TIMERA0) || defined(MILLIS_USE_TIMERA1)
+        if ((flags & TCD_OVF_bm) && (ticks < 0x07)) {
+      #elif defined(MILLIS_USE_TIMERA0)
+      */
+      #if defined(MILLIS_USE_TCA)
         ticks = (TIME_TRACKING_TIMER_PERIOD) - ticks;
-        if ((flags & TCA_SPLIT_HUNF_bm) && (ticks < 0xF0)) { // ticks is 0-254 and it doesn't take 14 ticks between when we disabled interrupts and when we grab the values.
-          overflows++;
-        }
-      #else // timerb
-        #if ((F_CPU <= 1000000))
-          if ((flags & TCB_CAPT_bm) && !(ticks & 0xFE00)) { // ticks is 1-1000, so if the 512s place isn't 1, it hasn't happened since we entered function.
-            overflows += 2;
-          }
-        #else
-          // here, ticks is F_CPU/2000 so it's trickier to pick something to check against.
-          // Why not just do a damned normal compare? that bitwise and saved like 2-3 clocks, and vastly decreased our tolerance to disabled interrupts.
-          #define OVERFLOW_THRESHOLD ((F_CPU / 2000) - 500)
-          if ((flags & TCB_CAPT_bm) && (ticks < OVERFLOW_THRESHOLD)) {
-            overflows++;
-          }
-        #endif
+        if ((flags & TCA_SPLIT_HUNF_bm) && (ticks < 0x03)) {
+      #else /* = defined(MILLIS_USE_TCB) */
+        if ((flags & TCB_CAPT_bm) && !(ticks & 0xFF00)) {
       #endif
+      #if (defined(MILLIS_USE_TCB) && (F_CPU <= 2000000UL))
+        overflows += 2;
+      #else
+        overflows++;
+      #endif
+        } // end getting ticks
 
-      // Perform division without the division operator to
-      #if defined(MILLIS_USE_TIMERD0)
-        #error "Timer D is not supported as a millis source on the AVR DA or DB series."
-      #elif (defined(MILLIS_USE_TIMERB0) || defined(MILLIS_USE_TIMERB1) || defined(MILLIS_USE_TIMERB2) || defined(MILLIS_USE_TIMERB3) || defined(MILLIS_USE_TIMERB4))
+      /*#if defined(MILLIS_USE_TIMERD0)
+
+        #if (F_CPU == 20000000UL || F_CPU == 10000000UL || F_CPU == 5000000UL)
+          uint8_t ticks_l = ticks >> 1;
+          ticks = ticks + ticks_l + ((ticks_l >> 2) - (ticks_l >> 4) + (ticks_l >> 7));
+          // + ticks +(ticks>>1)+(ticks>>3)-(ticks>>5)+(ticks>>8))
+          // speed optimization via doing math with smaller datatypes, since we know high byte is 1 or 0.
+          microseconds =   overflows * (TIME_TRACKING_CYCLES_PER_OVF / 20) + ticks; // ticks value corrected above.
+        #else
+          microseconds = ((overflows * (TIME_TRACKING_CYCLES_PER_OVF / 16))
+                            + (ticks * (TIME_TRACKING_CYCLES_PER_OVF / 16 / TIME_TRACKING_TIMER_PERIOD)));
+        #endif
+        #if defined(CLOCK_TUNE_INTERNAL) && !(F_CPU == 16000000UL || F_CPU ==  20000000UL || F_CPU ==  8000000UL || F_CPU ==  10000000UL || F_CPU ==  4000000UL || F_CPU ==  5000000UL)
+          #warning "TCD is not supported as a millis timing source when the oscillator is tuned to a frequency other than 16 or 20 MHz. Timing results will be wrong - use TCA0 or a TCB."
+        #endif
+      */
+      #if defined(MILLIS_USE_TCB)
         /* Ersatz Division for TCBs - now with inline assembly!
          *
          * It's well known that division is an operator you want to avoid like the plague on AVR.
@@ -330,22 +501,22 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
          * simulation, assuming you know enough about the values it will end up having to divide.
          *
          * Anyway. You don't want to be doing division. But that's what you need in order to
-         * appropriately scale the ick count from the prescaler-deprived TCBs. Since many users
+         * appropriately scale the tick count from the prescaler-deprived TCBs. Since many users
          * reconfigure the TCA for advanced PWM, using the TCA-prescaled clock was a non-starter
          * particularly since many parts have only one TCA. But division can be approximated
          * very closely if the divisor is constant using a series of bitshifts and addition/subtraction.
          *
          * The series of shifts was determined numerically with a spreadsheet that calculated the results for
          * each value that could come from the initial round of rightshifts for any combination of
-         * bitshifts and provided a number of statistics to select based on. Bacwards time travel must
-         * never happenb, or if it does, it must be a shorter backward step than micros runtime - 1 us
+         * bitshifts and provided a number of statistics to select based on (what?). Backwards time travel must
+         * never happen, or if it does, it must be a shorter backward step than micros runtime - 1 us
          * otherwise delay() will break and timeouts can instantly expire when it is hit. Similarly,
          * one wants to avoid large jumps forward, and cases where more consecutive "actual" times
          * than absolutely necessary return the same value (time should flow at a constant rate).
          * Finally, the artifacts of the calculation that are unavoidable should be distributed uniformly.
          * Undershooting or overshooting 999 endpoint at the counter's maximum value is the usual
          * source of large jumps (at the overflow point) in either direction. Terms should, as much as
-         * possible alternate between positive and negative to minimize artifacs.
+         * possible alternate between positive and negative to minimize artifacts.
          *
          * The most popular/important speeds are hand-implemented in assembly because the compiler
          * was doing a miserable job of it - wasting 20-30% of the execution time and it's one of the few
@@ -462,7 +633,7 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
               "lsr r1"      "\n\t"  // sacrifice 3 words for 12 clocks on the 24 MHz configuration
               "ror r0"      "\n\t"
             #endif
-            #if (F_CPU == 48000000UL )
+            #if (F_CPU == 48000000UL)
               "lsr r1"      "\n\t"  // sacrifice 5 words for 15 clocks on the 48 MHz configuration.
               "ror r0"      "\n\t"
             #endif
@@ -489,8 +660,8 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
             "add r0,r1"     "\n\t"  // + ticks >> 9
             "eor r1,r1"     "\n\t"  // clear out r1
             "sub %A0,r0"    "\n\t"  // Add the sum of terms that fit in a byte to what was ticks in old code.
-            "sbc %B0,r1"    "\n"    // carry - that's why you need a known 0 register!
-            : "+r" (ticks));        // Do the rest in C
+            "sbc %B0,r1"    "\n"    // carry - see,this is why AVR needs a known zero.
+            : "+r" (ticks));        // Do the rest in C. ticks is a read/write operand.
           microseconds = overflows * 1000 + ticks; // nice and clean.
 
         /* The Troublesome Tens - I initially fumbled this after the **now** r1 is 0 line
@@ -533,7 +704,7 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
               "lsr r1"      "\n\t"  // sacrifice 3 words for 12 clocks at 20 MHz
               "ror r0"      "\n\t"
             #endif
-            #if (F_CPU == 40000000UL )
+            #if (F_CPU == 40000000UL)
               "lsr r1"      "\n\t"  // sacrifice 5 words for 15 clocks at 40 MHz
               "ror r0"      "\n\t"
             #endif
@@ -557,127 +728,139 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
             "eor r1,r1"     "\n\t"  // restore zero_reg
             "add %A0,r0"    "\n\t"  // add to the shifted ticks
             "adc %B0,r1"    "\n"    // carry
-            : "+r" (ticks));        // Do the rest in C
+            : "+r" (ticks));        // Do the rest in C. ticks is a read/write operand.
           microseconds = overflows * 1000 + ticks;
-/* replaces:
-      #elif (F_CPU == 48000000UL) // Extreme overclocking
-        ticks = ticks >> 5;
-        microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
-      #elif (F_CPU == 24000000UL) // max rated speed
-        ticks = ticks >> 4;
-        microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
-      #elif (F_CPU == 12000000UL)
-        ticks = ticks >> 3;
-        microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
-      // Never was an implementation for 3 or 6, but it's obvious what the old style implementation would be,
-      #elif (F_CPU == 40000000UL) // overclocked aggressively
-        ticks = ticks >> 4;
-        microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
-      #elif (F_CPU == 20000000UL)
-        ticks = ticks >> 3;
-        microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
-      #elif (F_CPU == 10000000UL)
-        ticks = ticks >> 2;
-        microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
-      #elif (F_CPU ==  5000000UL)
-        ticks = ticks >> 1;
-        microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
-*/
+        /* replaces:
+        #elif (F_CPU == 48000000UL) // Extreme overclocking
+          ticks = ticks >> 5;
+          microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
+        #elif (F_CPU == 24000000UL) // max rated speed
+          ticks = ticks >> 4;
+          microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
+        #elif (F_CPU == 12000000UL)
+          ticks = ticks >> 3;
+          microseconds = overflows * 1000 + (ticks + (ticks >> 2) + (ticks >> 3) - (ticks >> 5)); // - (ticks >> 7)
+        // Never was an implementation for 3 or 6, but it's obvious what the old style implementation would be,
+        #elif (F_CPU == 40000000UL) // overclocked aggressively
+          ticks = ticks >> 4;
+          microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
+        #elif (F_CPU == 20000000UL)
+          ticks = ticks >> 3;
+          microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
+        #elif (F_CPU == 10000000UL)
+          ticks = ticks >> 2;
+          microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
+        #elif (F_CPU ==  5000000UL)
+          ticks = ticks >> 1;
+          microseconds = overflows * 1000 + (ticks - (ticks >> 2) + (ticks >> 4) - (ticks >> 6)); // + (ticks >> 8)
+        */
 
-      // powers of 2  - and a catchall for parts without dedicated implementations. It gives wrong results, but
-      // it also doesn't take forever like doing division would.
-      #elif (F_CPU  == 32000000UL || F_CPU > 24000000UL)
-        microseconds = overflows * 1000 + (ticks >> 4);
-      #elif (F_CPU  == 16000000UL || F_CPU > 12000000UL)
-        microseconds = overflows * 1000 + (ticks >> 3);
-      #elif (F_CPU  ==  8000000UL || F_CPU >  6000000UL)
-        microseconds = overflows * 1000 + (ticks >> 2);
-      #elif (F_CPU  ==  4000000UL || F_CPU >= 3000000UL)
-        microseconds = overflows * 1000 + (ticks >> 1);
-      #else //(F_CPU == 1000000UL || F_CPU == 2000000UL) - here clock is running at system clock instead of half system clock.
-            // and hence overflows only once per 2ms. On 2 MHz
-            // also works at 2MHz, since we use CLKPER for 1MHz vs CLKPER/2 for all others.
-        microseconds   = overflows * 1000 + ticks;
-      #endif
-      #if !((F_CPU == 48000000UL || F_CPU == 36000000UL || F_CPU == 24000000UL || F_CPU == 12000000UL || /* multiples of 12           */ \
-             F_CPU == 40000000UL || F_CPU == 30000000UL || F_CPU == 20000000UL || F_CPU == 10000000UL || /* multiples of 10           */ \
-             F_CPU == 32000000UL || F_CPU == 16000000UL || F_CPU ==  8000000UL || F_CPU ==  4000000UL || /* powers of 2               */ \
-             F_CPU ==  2000000UL || F_CPU ==  1000000UL || F_CPU == 25000000UL || F_CPU ==  5000000UL || /* powers of 2 cont, 25, 5   */ \
-             F_CPU == 44000000UL || F_CPU == 28000000UL || F_CPU == 14000000UL || F_CPU ==  3000000UL || /* oddball frequencies       */ \
-             F_CPU == 27000000UL)&& /* warn fools who messed with the timers.h file too and expected that the core would sort out how */ \
-            ((TIME_TRACKING_TIMER_DIVIDER == 2 && TIME_TRACKING_TICKS_PER_OVF == F_CPU/2000) || /*how to make the timer work correctly*/ \
-             (TIME_TRACKING_TIMER_DIVIDER == 1 && (TIME_TRACKING_TICKS_PER_OVF == F_CPU/500 && F_CPU == 1000000) || (TIME_TRACKING_TICKS_PER_OVF == F_CPU/1000 && F_CPU == 2000000))))
-                                                 /*  without them implementing it. No such luck  */
-        #warning "Millis timer (TCBn) at this frequency and/or configuration unsupported, micros() will return totally bogus values."
-      #endif
-    #else // Done with TCB
-
-      #if (F_CPU == 30000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + ((ticks * 2) + ((uint16_t)(ticks >> 3)));
-      #elif (F_CPU == 28000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + ((ticks * 2) + ((uint16_t)(ticks >> 2) + (ticks >> 5)));
-      #elif (F_CPU == 25000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + (ticks * 2 + ((uint16_t)(ticks >> 1) + (ticks >> 4)));
-      #elif (F_CPU == 24000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + (ticks * 3 - ((uint16_t)(ticks >> 2) - (ticks >> 4) - (ticks >> 5)));
-      #elif (F_CPU == 20000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + (ticks * 3 + ((uint16_t)(ticks >> 2) - (ticks >> 4)));
-      #elif (F_CPU == 28000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + (ticks * 4 + ((uint16_t)(ticks >> 1) + (ticks >> 4) + (ticks >> 5)));
-      #elif (F_CPU == 12000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + (ticks * 5 + ((uint16_t)(ticks >> 2) + (ticks >> 4) + (ticks >> 5)));
-      #elif (F_CPU == 10000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
-        microseconds = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-            + ((ticks << 3) - ((uint16_t)(ticks << 1) + (ticks >> 1) - (ticks >> 3)));
-      #elif (F_CPU == 5000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 16)
-        microseconds = (overflows * millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-                     + (ticks * 3 + ((uint16_t)(ticks >> 2) - (ticks >> 4)));
-      #else
-        #if (TIME_TRACKING_TIMER_DIVIDER%(F_CPU/1000000))
-          #warning "Millis timer (TCA0) at this frequency unsupported, micros() will return bogus values."
+        // powers of 2  - and a catchall for parts without dedicated implementations. It gives wrong results, but
+        // it also doesn't take forever like doing division would.
+        #elif (F_CPU  == 32000000UL || F_CPU > 24000000UL)
+          microseconds = overflows * 1000 + (ticks >> 4);
+        #elif (F_CPU  == 16000000UL || F_CPU > 12000000UL)
+          microseconds = overflows * 1000 + (ticks >> 3);
+        #elif (F_CPU  ==  8000000UL || F_CPU >  6000000UL)
+          microseconds = overflows * 1000 + (ticks >> 2);
+        #elif (F_CPU  ==  4000000UL || F_CPU >= 3000000UL)
+          microseconds = overflows * 1000 + (ticks >> 1);
+        #else //(F_CPU == 1000000UL || F_CPU == 2000000UL) - here clock is running at system clock instead of half system clock.
+              // and hence overflows only once per 2ms. On 2 MHz
+              // also works at 2MHz, since we use CLKPER for 1MHz vs CLKPER/2 for all others.
+          microseconds   = overflows * 1000 + ticks;
         #endif
-        microseconds = ((overflows * millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
-                      + (ticks * (millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF) / TIME_TRACKING_TIMER_PERIOD)));
-      #endif
-    #endif // end of timer-specific part of micros calculations
-    return microseconds;
-  }
-  #else // end of non-RTC micros code
-  /* We do not have a timebase sufficiently accurate to give microsecond timing. In fact, we barely have millisecond timing available
-   * The microsecond delay counts clock cycles, and so it does still work. It is planned that a future library will switch the millis
-   * pause millis before sleeping and turn on the RTC, tracking the passage of time to a much coarser resolution with that, and turn
-   * it back on when waking from sleep, so people can keep time while sleeping without sacrificing micros().
-   * In any event, as of 2.4.3 we now provide the stub below, which we hope is more useful than being told that micros() isn't defined.
-   */
+        #if !((F_CPU == 48000000UL || F_CPU == 36000000UL || F_CPU == 24000000UL || F_CPU == 12000000UL || /* multiples of 12           */ \
+               F_CPU == 40000000UL || F_CPU == 30000000UL || F_CPU == 20000000UL || F_CPU == 10000000UL || /* multiples of 10           */ \
+               F_CPU == 32000000UL || F_CPU == 16000000UL || F_CPU ==  8000000UL || F_CPU ==  4000000UL || /* powers of 2               */ \
+               F_CPU ==  2000000UL || F_CPU ==  1000000UL || F_CPU == 25000000UL || F_CPU ==  5000000UL || /* powers of 2 cont, 25, 5   */ \
+               F_CPU == 44000000UL || F_CPU == 28000000UL || F_CPU == 14000000UL || F_CPU ==  3000000UL || /* oddball frequencies       */ \
+               F_CPU == 27000000UL)&& /* warn fools who messed with the timers.h file too and expected that the core would sort out how */ \
+              ((TIME_TRACKING_TIMER_DIVIDER == 2 && TIME_TRACKING_TICKS_PER_OVF == F_CPU/2000) || /*how to make the timer work correctly*/ \
+               (TIME_TRACKING_TIMER_DIVIDER == 1 && (TIME_TRACKING_TICKS_PER_OVF == F_CPU/500 && F_CPU == 1000000) || (TIME_TRACKING_TICKS_PER_OVF == F_CPU/1000 && F_CPU == 2000000))))
+                                                   /*  without them implementing it. No such luck  */
+          #warning "Millis timer (TCBn) at this frequency and/or configuration unsupported, micros() will return totally bogus values."
+        #endif
+      #else /* = defined(MILLIS_USE_TCA) */
+        __attribute__((unused)) uint8_t ticks_temp;  // As this is the case for TCA, ticks is always 8 bit
+        __attribute__((unused)) int16_t ticks_acc;   // As the compiler does not "buffer" previous bit-shifts to the same variable, we do it ourselves
+        #if (F_CPU == 30000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
+          ticks_acc  = ticks * 2;
+          ticks_acc += ticks >> 3;
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 28000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
+          ticks_acc  = ticks * 2;
+          ticks_acc += (ticks_temp = (ticks >> 2));
+          ticks_acc += (ticks_temp = (ticks_temp >> 3)); //ticks_temp = ticks >> 5
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 25000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
+          ticks_acc  = ticks * 2;
+          ticks_acc += ticks >> 1;
+          ticks_acc += ticks >> 4; //ticks_temp = ticks >> 4 (compiler uses SWAP + ANDI 0x0F, faster then shifting three times)
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 24000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)  // 1 timer clock equals 2.667 us
+          ticks_acc  = ticks * 3;                         // 1 tick = 3 us
+          ticks_acc -= (ticks_temp = (ticks >> 1));       // (1/2) 1 tick = 2.5 us   =>   2.5us - 2.667us =  0.167us
+          ticks_acc += (ticks_temp = (ticks_temp >> 2));  // (1/8) 1 tick = 2.675 us => 2.675us - 2.667us = -0.007us
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 20000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF));
+          ticks_acc  = ticks * 3;
+          ticks_acc += (ticks_temp = (ticks >> 2));
+          ticks_acc -= (ticks_temp = (ticks_temp >> 2));   //ticks_temp = ticks >> 4
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 16000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)  // 1 timer clock equals 3.922 us
+          ticks_acc  = ticks * 4;                         // 1 tick = 4 us, 4us-3.922us = 0.078
+          ticks_acc -= (ticks_temp = (ticks >> 4));       // (1/16) 1 tick = 3.9375us => 3.9375us-3.922us =  0.0155
+          ticks_acc -= (ticks_temp = (ticks_temp >> 2));  // (1/64) 1 tick = 3.9219us => 3.9219us-3.922us = -0.0003
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 12000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)  // 1 timer clock equals 5.49 us
+          ticks_acc  = ticks * 5;                         // 1 tick = 5 us, 5us-5.49us = -0.49us
+          ticks_acc += ticks >> 1;                        // (1/2) 1 tick = 5.5us => 5.5us-5.49us =  0.010us    // next would be >>7 - not really worth it
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #elif (F_CPU == 10000000UL && TIME_TRACKING_TICKS_PER_OVF == 255 && TIME_TRACKING_TIMER_DIVIDER == 64)  // 1 timer clock equals 6.27 us
+          ticks_acc  = ticks * 6;                         // 1 tick = 6 us, 6us-6.27us = -0.27us
+          ticks_acc += (ticks_temp = (ticks >> 2));       // (1/4)  1 tick = 6.25us  => 6.25us-6.27s =  -0.020us
+          ticks_acc += (ticks_temp = (ticks_temp >> 4));  // (1/64) 1 tick = 6.266us => 6.266us-6.27s = -0.004us
+          microseconds  = (overflows * clockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF)) + ticks_acc;
+        #else
+          #if (TIME_TRACKING_TIMER_DIVIDER%(F_CPU/1000000))
+            #warning "Millis timer (TCA) at this frequency unsupported, micros() will return bogus values."
+          #endif
+          microseconds = ((overflows * millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF))
+                        + (ticks * (millisClockCyclesToMicroseconds(TIME_TRACKING_CYCLES_PER_OVF) / TIME_TRACKING_TIMER_PERIOD)));
+        #endif
+      #endif // end of timer-specific part of micros calculations
+      return microseconds;
+    }
+  #else // MILLIS_USE_TIMERRTC is defined, so we don't have micros
+    /* We do not have a timebase sufficiently accurate to give microsecond timing. In fact, we barely have millisecond timing available
+     * The microsecond delay counts clock cycles, and so it does still work. It is planned that a future library will switch the millis
+     * pause millis before sleeping and turn on the RTC, tracking the passage of time to a much coarser resolution with that, and turn
+     * it back on when waking from sleep, so people can keep time while sleeping without sacrificing micros().
+     * In any event, as of 2.4.3 we now provide the stub below, which we hope is more useful than being told that micros() isn't defined.
+     */
+      unsigned long micros() {
+        badCall("microsecond timekeeping is not supported when the RTC is used as the sole timekeeping timer (though delayMicroseconds() is)");
+        return -1;
+      }
+  #endif /* !defined(MILLIS_USE_TIMERRTC) */
+#else // MILLIS_USE_TIMERNONE defined - we have neither of these functions.
+    /* Uses should not call millis() or micros() if the core timekeeping has been disabled. Usually, encountering this error either means
+     * that they disabled millis earlier for some other sketch, and the preferences were saved with that - or that they are using a library
+     * with a dependence on the timekeeping facilities. Sometimes these are meaningful, other times it is only for a feature that isn't
+     * being used, or to catch a particular corner case (see: tinyNeoPixel, very end of show() for an example).
+     * As of 2.4.3 we provide the stubs below, which we hope is more useful than being told that millis or micros isn't defined.
+     */
     unsigned long micros() {
-      badCall("microsecond timekeeping is not supported when the RTC is used as the sole timekeeping timer (though delayMicroseconds() is)");
+      badCall("micros() is not available because it has been disabled through the tools -> millis()/micros() menu");
       return -1;
     }
-  #endif
-#else    // end of non-MILLIS_USE_TIMERNONE code
-
-  /* Uses should not call millis() or micros() if the core timekeeping has been disabled. Usually, encountering this error either means
-   * that they disabled millis earlier for some other sketch, and the preferences were saved with that - or that they are using a library
-   * with a dependence on the timekeeping facilities. Sometimes these are meaningful, other times it is only for a feature that isn't
-   * being used, or to catch a particular corner case (see: tinyNeoPixel, very end of show() for an example).
-   * As of 1.4.0 we provide the stubs below, which we hope is more useful than being told that millis or micros isn't defined.
-   */
-  unsigned long micros() {
-    badCall("micros() is not available because it has been disabled through the tools -> millis()/micros() menu");
-    return -1;
-  }
-  unsigned long millis() {
-    badCall("millis() is not available because it has been disabled through the tools -> millis()/micros() menu");
-    return -1;
-  }
-#endif // end of non-MILLIS_USE_TIMERNONE code
+    unsigned long millis() {
+      badCall("millis() is not available because it has been disabled through the tools -> millis()/micros() menu");
+      return -1;
+    }
+#endif // MILLIS_USE_TIMERNONE code
 
 
 /* delay()
@@ -712,10 +895,12 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
   // from internal, and switch logic is in even though micros isn't.
   void delay(unsigned long ms)
   {
-    uint32_t start = micros();
-    while (ms > 0) {
+    uint16_t start = (uint16_t)micros();
+    while (true) {
+      if (ms == 0) break;
       yield();
-      while (ms > 0 && (micros() - start) >= 1000) {
+      uint16_t us_passed = (uint16_t)micros() - start;
+      if (us_passed >= 1000) {
         ms--;
         start += 1000;
       }
@@ -725,6 +910,7 @@ inline unsigned long microsecondsToClockCycles(unsigned long microseconds) {
   void _delay_nonconst(unsigned long ms) {
     while (ms > 0) {
       _delay_ms(1);
+      ms--;
     }
   }
   inline __attribute__((always_inline)) void delay(unsigned long ms) {
@@ -931,6 +1117,20 @@ __attribute__ ((noinline)) void _delayMicroseconds(unsigned int us) {
   // we just burned 27 (24) cycles above, remove 3
   us -= 3; // 2 cycles
 
+#elif F_CPU >= 25000000L
+  // for a one-microsecond delay, burn 8 cycles and return
+  __asm__ __volatile__ (
+    "rjmp .+2" "\n\t"     // 2 cycles - jump over next instruction.
+    "ret" "\n\t"          // 4 cycles - rjmped over initially....
+    "rcall .-4");         // 2 cycles - ... but then called here);
+                          // wait 8 cycles with 3 words
+  if (us <= 1) return; //  = 3 cycles, (4 when true)
+
+  // the loop takes 1/5 of a microsecond (5 cycles) per iteration
+  // so execute it 5x  for each microsecond of delay requested.
+  us = (us << 2) + us; // x5 us, = 7 cycles
+  // we just burned 24 (22) cycles above, remove 3
+  us -= 3; // 2 cycles
 
 #elif F_CPU >= 24000000L
   // for a one-microsecond delay, burn 8 cycles and return
@@ -1113,7 +1313,6 @@ void init() {
     PORTD.PIN0CTRL = PORT_ISC_INPUT_DISABLE_gc;
   #endif
   init_clock();
-
   init_timers();
   #if defined(ADC0)
     init_ADC0();
@@ -1161,18 +1360,17 @@ void restart_millis()
       TCA1.SPLIT.CTRLA = 0x00;
       TCA1.SPLIT.CTRLD = TCA_SPLIT_SPLITM_bm;
       TCA1.SPLIT.HPER    = PWM_TIMER_PERIOD;
+    /*
     #elif defined(MILLIS_USE_TIMERD0)
       TCD0.CTRLA = 0x00;
       while(TCD0.STATUS & 0x01);
-    #elif (defined(MILLIS_USE_TIMERB0) || defined(MILLIS_USE_TIMERB1)|| defined(MILLIS_USE_TIMERB2)|| defined(MILLIS_USE_TIMERB3)|| defined(MILLIS_USE_TIMERB4)) // It's a type b timer
+    */
+    #elif defined(MILLIS_USE_TCB) // It's a type b timer
       _timer->CTRLB = 0;
     #endif
     init_millis();
   #endif
 }
-
-
-
 
 void __attribute__((weak)) init_millis()
 {
@@ -1183,6 +1381,7 @@ void __attribute__((weak)) init_millis()
       TCA0.SPLIT.INTCTRL |= TCA_SPLIT_HUNF_bm;
     #elif defined(MILLIS_USE_TIMERA1)
       TCA1.SPLIT.INTCTRL |= TCA_SPLIT_HUNF_bm;
+    /*
     #elif defined(MILLIS_USE_TIMERD0)
       TCD0.CMPBCLR        = TIME_TRACKING_TIMER_PERIOD; // essentially, this is TOP
       TCD0.CTRLB          = 0x00; // oneramp mode
@@ -1202,6 +1401,7 @@ void __attribute__((weak)) init_millis()
       #endif
       RTC.INTCTRL         = 0x01; // enable overflow interrupt
       RTC.CTRLA           = (RTC_RUNSTDBY_bm|RTC_RTCEN_bm|RTC_PRESCALER_DIV32_gc);//fire it up, prescale by 32.
+    */
     #else // It's a type b timer - we have already errored out if that wasn't defined
       _timer->CCMP = TIME_TRACKING_TIMER_PERIOD;
       // Enable timer interrupt, but clear the rest of register
@@ -1218,8 +1418,8 @@ void set_millis(__attribute__((unused))uint32_t newmillis)
 {
   #if defined(MILLIS_USE_TIMERNONE)
     badCall("set_millis() is only valid with millis timekeeping enabled.");
-    GPIOR0 |= newmillis; // keeps the compiler from warning about unused parameter, it's a compile error if this is reachable anyway.
   #else
+    /*
     #if defined(MILLIS_USE_TIMERRTC)
       // timer_overflow_count = newmillis >> 16;
       // millis = 61/64(timer_overflow_count << 16 + RTC.CNT)
@@ -1234,26 +1434,48 @@ void set_millis(__attribute__((unused))uint32_t newmillis)
       RTC.CNT = newmillis & 0xFFFF;
       SREG = oldSREG; // reemable oimterripts if we killed them,
     #else
+     */
       /* farting around with micros via overflow count was ugly and buggy.
        * may implement again, better, in the future - but millis and micros
        * will get out of sync when you use set_millis
        * I think the way to do it is to make this implementation (but not big one)
        * inline, so if newmillis is constant, we can calculate the (compile-time known)
        * number of overflows using all the floating point math we want, and otherwise,
-       * document that it will zero out micros.*/
-      timer_millis = newmillis;
-    #endif
+       * document that it will zero out micros. (I believe MX682X wrote this?)*/
+
+      /* I see no problem with millis and micros getting out of sync. This function is
+       * called set_millis, not setMicros(). Why should it change micros? Remember, this function is planned for applications like:
+       * Chucking millis forward when you wake up before hitting snooze again.
+       * uhhh. Honestly I think that's it.
+       * And in that circumstance, if you have something being timed with micros, either you should be using millis, or you went to sleep when
+       * you shouldn't have, and you have long since missed your appointment. If you're timing something with micros while doing something on the timescales this is meant for
+       * you're doin' it wrong. I'm not convinced that it matters that micros and millis get out of sync.
+       *
+       * Also, at least on DxCore, 99% of millis timers are going to be TCB. But this limitation only effects TCD0 (unsupported) and TCAn. It might become more
+       * relevant when the EB-series comes along with those two new timers. On the other hand, it may turn out that there is some way to make one or either of them into
+       * good millis timers (I would say I doubt that for TCE - it's too valuable as a PWM timer - but with even a 2:1 prescaler option, you could slow down a TCF so you got
+       * ONE MILLION microseconds per overflow - though extracting millis from micros would then be hard. )
+       * Using TCA for millis is what you do when you're desperate, not what you set out planning to do. timer_millis is all the state we store for TCB.
+       * so this won't cause any desynchronization of timing for the vast majority of users.
+       * -SK 2/4/23
+       */
+      timingStruct.timer_millis = newmillis;
+    //#endif
   #endif
 }
 
 void nudge_millis(__attribute__((unused)) uint16_t nudgesize) {
-  #if (MILLIS_TIMER &= 0x78) /* 0x40 matches TCDs, 0x20 matches TCBs, 0x10 matches TCA0 0x08 matches TCA1, so OR them together and AND it with the timer to make sure it's not RTC, disabled, etc.  */
+  #if (MILLIS_TIMER & 0x78) /* 0x40 matches TCDs, 0x20 matches TCBs, 0x10 matches TCA0 0x08 matches TCA1, so OR them together and AND it with the timer to make sure it's not RTC, disabled, etc.  */
     uint8_t oldSREG=SREG;
     cli();
-    timer_millis += nudgesize;
+    timingStruct.timer_millis += nudgesize;
     SREG=oldSREG;
   #else
-    #warning "Timer correction not yet supported for this timer.");
+    #if defined(MILLIS_USE_TIMERNONE)
+      badCall("nudge_millis() is not available with millis disabled. What are you hoping for it to do?");
+    #else
+      badCall("The selected timer does not support nudging millis at this point in time. Only TCA, TCB and TCD timers support this currently.");
+    #endif
   #endif
 }
 
@@ -1449,7 +1671,9 @@ void  __attribute__((weak)) init_clock() {
       _PROTECTED_WRITE(CLKCTRL_MCLKINTCTRL, CLKCTRL_CFD_bm);
       #if (CLOCK_SOURCE == 2)
         // external clock
-        _PROTECTED_WRITE(CLKCTRL_XOSCHFCTRLA, (CLKCTRL_SELHF_EXTCLOCK_gc | CLKCTRL_ENABLE_bm));
+        // CLKCTRL_SELHF_EXTCLOCK_gc or CLKCTRL_SELHF_EXTCLK_gc? Microchip can't seem to decide, and we can't test for it with the preprocessor because it's a bloody enumerated type.
+        // 0x02 is the numeric value of that constant. I can't even provide compatibility defines, because I don't have any way to tell which one it is for a given version of the headers.
+        _PROTECTED_WRITE(CLKCTRL_XOSCHFCTRLA, (0x02 | CLKCTRL_ENABLE_bm));
         uint8_t i = 255;
       #else
         // external crystal
@@ -1485,7 +1709,7 @@ void  __attribute__((weak)) init_clock() {
  * anything the user might upload.                                                             *
  * The weakly defined functions can be overridden if the blink code should be disabled or if   *
  * the same frequency can be achieved with internal oscilaltor and that is desired as a        *
- * fallback insead of halting startup.                                                         *
+ * fallback instead of halting startup.                                                         *
  ***********************************************************************************************/
 
 
@@ -1568,7 +1792,7 @@ void  __attribute__((weak)) init_clock() {
  * the same as the standard boards and is a sensible default: It's fast enough that most things *
  * don't have noticeable flicker/etc, but you can still PWM the gate of a MOSFET gate at that   *
  * speed and get away with it for small MOSFETs with low gate charge. As the frequency gets     *
- * higher, you enter the teritory where the pin can't drive the gate hard enough for the FET to *
+ * higher, you enter the territory where the pin can't drive the gate hard enough for the FET to *
  * spend most of it's time either ON or OFF, switching losses increase, the MOSFET gets hotter  *
  * In some cases, this may lead to failure of the FET at a far lighter load than it would if    *
  * there was no PWM involved. Other timer, it will merely degrade performance and efficiency.   *
@@ -1611,7 +1835,7 @@ void  __attribute__((weak)) init_clock() {
  *                                                                                              *
  * Unfortunately there's no 1/128 prescaler option.                                             *
  *                                                                                              *
- * The type D timer has more flexible optons for PWM frequency partly because there we can      *
+ * The type D timer has more flexible options for PWM frequency partly because there we can      *
  * increase TOP and analogWrite can leftshift it's argument accordingly.                        *
  * Changing at runtime is supported for TCD and analogWrite()                                   *
  ************************************************************************************************/
@@ -1629,7 +1853,7 @@ void init_timers() {
   init_TCBs();
   #if (defined(TCD0) && defined(USE_TIMERD0_PWM) && !defined(MILLIS_USE_TIMERD0))
     init_TCD0();
-    #if !defined(ERRATA_TCD_PORTMUX) && defined(TCD0_PINS)
+    #if defined(ERRATA_TCD_PORTMUX) && ERRATA_TCD_PORTMUX == 0 && defined(TCD0_PINS)
       PORTMUX.TCDROUTEA = TCD0_PINS;
     #else
       /* Do nothing - portmux is busted */
@@ -1749,7 +1973,7 @@ void __attribute__((weak)) init_TCBs() {
   #endif
         ;
   // Start with TCB0 - we take advantage of the fact that we can get a pointer
-  // to TCB09's struct, and increment it to go through all of them.
+  // to TCB0's struct, and increment it to go through all of them.
   TCB_t *timer_B = (TCB_t *)&TCB0;
 
   // Find end timer - the highest numbered TCB that is not used for millis.
@@ -1793,9 +2017,9 @@ void __attribute__((weak)) init_TCBs() {
       // Use TCA clock (250kHz, +/- 50%) and enable
       timer_B->CTRLA = (TCB_CLKSEL_TCA0_gc) | (TCB_ENABLE_bm);
 
-      // Increment pointer to next TCB instance
-      timer_B++;
     }
+    // Increment pointer to next TCB instance
+    timer_B++;
     // Stop when pointing to the last timer.
   } while (timer_B <= timer_B_end);
 }
